@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="Tab_History" xml:space="preserve"><value>Clipboard History</value></data>
+  <data name="Tab_Screenshot" xml:space="preserve"><value>Screenshot</value></data>
+  <data name="Tab_Memo" xml:space="preserve"><value>Memo</value></data>
+
+  <data name="QuickFilter_Placeholder" xml:space="preserve"><value>Search... (#tag)</value></data>
+  <data name="QuickFilter_Clear" xml:space="preserve"><value>Clear filter</value></data>
+  <data name="VimHintBar" xml:space="preserve"><value>j:Down k:Up gg:Top G:Bottom dd:Delete yy:Copy a:Edit /:Search | 📌:Always on top ⚙:Settings</value></data>
+  <data name="RecordCount_Format" xml:space="preserve"><value>Records: {0}/{1}</value></data>
+
+  <data name="Header_Pin" xml:space="preserve"><value>Always on top</value></data>
+  <data name="Header_ColorPicker" xml:space="preserve"><value>Color Picker</value></data>
+  <data name="Header_Settings" xml:space="preserve"><value>Settings</value></data>
+
+  <data name="Confirm_ExitTitle" xml:space="preserve"><value>Confirm Exit</value></data>
+  <data name="Confirm_ExitMessage" xml:space="preserve"><value>Are you sure you want to exit HasamiBoard?</value></data>
+
+  <data name="Button_Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="Button_No" xml:space="preserve"><value>No</value></data>
+  <data name="Button_Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Button_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Button_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Button_Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Button_Pin" xml:space="preserve"><value>Pin</value></data>
+  <data name="Button_MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="Button_MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="Button_Copy" xml:space="preserve"><value>Copy</value></data>
+  <data name="Button_ClearAll" xml:space="preserve"><value>Clear All</value></data>
+
+  <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Settings_Language_Auto" xml:space="preserve"><value>Auto (Follow OS)</value></data>
+  <data name="Settings_Language_Japanese" xml:space="preserve"><value>Japanese</value></data>
+  <data name="Settings_Language_English" xml:space="preserve"><value>English</value></data>
+  <data name="Settings_DarkMode" xml:space="preserve"><value>Dark Mode</value></data>
+
+  <data name="Tray_Show" xml:space="preserve"><value>&amp;Show</value></data>
+  <data name="Tray_Exit" xml:space="preserve"><value>E&amp;xit</value></data>
+
+  <data name="AppTitle" xml:space="preserve"><value>HasamiBoard</value></data>
+  <data name="App_UnhandledException_Message" xml:space="preserve"><value>An unexpected error occurred in HasamiBoard. Please check crash.log for details.</value></data>
+  <data name="App_AlreadyRunning_Message" xml:space="preserve"><value>HasamiBoard is already running.</value></data>
+  <data name="App_StartupFailed_Message" xml:space="preserve"><value>HasamiBoard could not be started. Please check crash.log for details.</value></data>
+
+  <data name="History_Empty" xml:space="preserve"><value>No clipboard history yet. Copy some text to get started.</value></data>
+  <data name="History_AddTag" xml:space="preserve"><value>Add Tag</value></data>
+  <data name="History_NoMoreTags" xml:space="preserve"><value>All master tags are already applied.</value></data>
+  <data name="ClearAll_ConfirmTitle" xml:space="preserve"><value>Clear All</value></data>
+  <data name="ClearAll_ConfirmMessage" xml:space="preserve"><value>Delete all non-pinned items? Pinned items will be kept.</value></data>
+  <data name="Tooltip_AddTag" xml:space="preserve"><value>Add Tag</value></data>
+  <data name="Tooltip_Unpin" xml:space="preserve"><value>Unpin</value></data>
+
+  <data name="Screenshot_Empty" xml:space="preserve"><value>No screenshots yet. Copy an image to get started.</value></data>
+  <data name="Button_CleanOrphans" xml:space="preserve"><value>Clean Unregistered Images</value></data>
+  <data name="Tooltip_OpenImage" xml:space="preserve"><value>Open Image</value></data>
+  <data name="Tooltip_OpenFolder" xml:space="preserve"><value>Open Folder</value></data>
+  <data name="Tooltip_CopyImage" xml:space="preserve"><value>Copy Image</value></data>
+  <data name="Tooltip_CopyNote" xml:space="preserve"><value>Copy Note</value></data>
+  <data name="Tooltip_EditNote" xml:space="preserve"><value>Edit</value></data>
+  <data name="Cleanup_ResultTitle" xml:space="preserve"><value>Cleanup Complete</value></data>
+  <data name="Cleanup_ResultMessage" xml:space="preserve"><value>{0} unregistered file(s) removed.</value></data>
+  <data name="Cleanup_ConfirmTitle" xml:space="preserve"><value>Clean Up Unregistered Images</value></data>
+  <data name="Cleanup_ConfirmMessage" xml:space="preserve"><value>Delete all unregistered screenshot image files? This cannot be undone.</value></data>
+  <data name="Cleanup_ConfirmMessage_Memo" xml:space="preserve"><value>Delete all unregistered memo image files? This cannot be undone.</value></data>
+  <data name="Tooltip_RemoveTag" xml:space="preserve"><value>Remove tag</value></data>
+  <data name="Ocr_LanguagePackMissingTitle" xml:space="preserve"><value>OCR Language Pack Required</value></data>
+  <data name="Ocr_LanguagePackMissingMessage" xml:space="preserve"><value>Text recognition (OCR) is unavailable because no OCR language pack is installed. Open Windows Settings &gt; Time &amp; Language &gt; Language &amp; region, select your language, and install its optional "Optical character recognition" feature.</value></data>
+  <data name="Ocr_NoteEditInProgressTitle" xml:space="preserve"><value>OCR Result Not Applied</value></data>
+  <data name="Ocr_NoteEditInProgressMessage" xml:space="preserve"><value>The OCR result was not applied because this note is currently being edited. Finish editing and run OCR again.</value></data>
+  <data name="ContextMenu_EditNote" xml:space="preserve"><value>Edit</value></data>
+  <data name="ContextMenu_CreateMemo" xml:space="preserve"><value>Create Memo</value></data>
+  <data name="ContextMenu_AnalyzeQrCode" xml:space="preserve"><value>Analyze QR Code</value></data>
+
+  <data name="Selection_Count" xml:space="preserve"><value>{0} selected</value></data>
+  <data name="Selection_AddTag" xml:space="preserve"><value>Add Tag</value></data>
+  <data name="Selection_DeleteConfirmTitle" xml:space="preserve"><value>Delete Selected Items</value></data>
+  <data name="Selection_DeleteConfirmMessage" xml:space="preserve"><value>Delete the selected {0} item(s)? This cannot be undone.</value></data>
+
+  <data name="Template_ManagerTitle" xml:space="preserve"><value>Memo Templates</value></data>
+  <data name="Template_New" xml:space="preserve"><value>New Template</value></data>
+  <data name="Template_NewTitle" xml:space="preserve"><value>New Template</value></data>
+  <data name="Template_EditTitle" xml:space="preserve"><value>Edit Template</value></data>
+  <data name="Template_NamePlaceholder" xml:space="preserve"><value>Template name</value></data>
+  <data name="Template_PlaceholderHint" xml:space="preserve"><value>Available placeholders: {date} {time} {datetime} {year} {month} {day} — expanded when the template is applied.</value></data>
+  <data name="Template_Empty" xml:space="preserve"><value>No templates yet. Click "New Template" to create one.</value></data>
+  <data name="Template_Blank" xml:space="preserve"><value>New</value></data>
+  <data name="Template_SaveAsTemplate" xml:space="preserve"><value>Save as Template</value></data>
+  <data name="Template_DeleteConfirmTitle" xml:space="preserve"><value>Delete Template</value></data>
+  <data name="Template_DeleteConfirmMessage" xml:space="preserve"><value>Delete the template "{0}"? This cannot be undone.</value></data>
+
+  <data name="Memo_Empty" xml:space="preserve"><value>No memos yet. Click + to create one.</value></data>
+  <data name="Memo_TitlePlaceholder" xml:space="preserve"><value>Title</value></data>
+  <data name="Memo_Mode_Text" xml:space="preserve"><value>Text</value></data>
+  <data name="Memo_Mode_Markdown" xml:space="preserve"><value>Markdown</value></data>
+  <data name="Memo_NewTitle" xml:space="preserve"><value>New Memo</value></data>
+  <data name="Memo_EditTitle" xml:space="preserve"><value>Edit Memo</value></data>
+  <data name="Button_New" xml:space="preserve"><value>New</value></data>
+  <data name="Tooltip_Ocr" xml:space="preserve"><value>OCR (Recognize Text)</value></data>
+
+  <data name="Settings_ItemHeight" xml:space="preserve"><value>Display Height</value></data>
+  <data name="Settings_ThumbnailHeight" xml:space="preserve"><value>Thumbnail Height</value></data>
+  <data name="Settings_MaxHistoryCount" xml:space="preserve"><value>Clipboard History Limit</value></data>
+  <data name="Settings_MaxScreenshotCount" xml:space="preserve"><value>Screenshot Limit</value></data>
+  <data name="Settings_QuickFilterVisible" xml:space="preserve"><value>Show Quick Filter Bar</value></data>
+  <data name="Settings_AutoStart" xml:space="preserve"><value>Launch at logon</value></data>
+  <data name="Settings_FeatureToggles" xml:space="preserve"><value>Enabled Features</value></data>
+  <data name="Settings_Feature_History" xml:space="preserve"><value>Clipboard History</value></data>
+  <data name="Settings_Feature_Screenshot" xml:space="preserve"><value>Screenshot</value></data>
+  <data name="Settings_Feature_Memo" xml:space="preserve"><value>Memo</value></data>
+  <data name="Settings_Feature_Converter" xml:space="preserve"><value>Developer Tools</value></data>
+  <data name="Settings_ConverterModes" xml:space="preserve"><value>Developer Tools Modes</value></data>
+  <data name="Settings_ScreenshotFormat" xml:space="preserve"><value>Screenshot Image Format</value></data>
+  <data name="Settings_JpegQuality" xml:space="preserve"><value>JPEG Quality</value></data>
+  <data name="Settings_WebpQuality" xml:space="preserve"><value>WebP Quality</value></data>
+  <data name="Settings_WebpLossless" xml:space="preserve"><value>WebP Lossless</value></data>
+  <data name="Settings_DominantColor" xml:space="preserve"><value>Extract Dominant Colors</value></data>
+  <data name="Settings_ScreenshotHotkey" xml:space="preserve"><value>Screenshot Hotkey</value></data>
+  <data name="Settings_ColorPickerHotkey" xml:space="preserve"><value>Color Picker Hotkey</value></data>
+  <data name="Settings_ConverterHotkey" xml:space="preserve"><value>Developer Tools Hotkey</value></data>
+  <data name="Settings_ErrorListHotkey" xml:space="preserve"><value>Error Code List Hotkey</value></data>
+  <data name="Settings_HotkeyEnabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="Settings_Tab_General" xml:space="preserve"><value>General</value></data>
+  <data name="Settings_Tab_Screenshot" xml:space="preserve"><value>Screenshot</value></data>
+  <data name="Settings_Tab_Tools" xml:space="preserve"><value>Tools</value></data>
+  <data name="MemoFontPanel_Title" xml:space="preserve"><value>Font</value></data>
+  <data name="MemoFontPanel_Text" xml:space="preserve"><value>Text</value></data>
+  <data name="MemoFontPanel_MarkdownEdit" xml:space="preserve"><value>Markdown editor</value></data>
+  <data name="MemoFontPanel_MarkdownView" xml:space="preserve"><value>Preview body</value></data>
+  <data name="MemoFontPanel_MarkdownCode" xml:space="preserve"><value>Preview code</value></data>
+  <data name="Settings_Fonts" xml:space="preserve"><value>Fonts</value></data>
+  <data name="Settings_Font_History" xml:space="preserve"><value>Clipboard History</value></data>
+  <data name="Settings_Font_ScreenshotMemo" xml:space="preserve"><value>Screenshot Note</value></data>
+  <data name="Settings_Font_MemoText" xml:space="preserve"><value>Memo (Text mode)</value></data>
+  <data name="Settings_Font_MemoMarkdownEdit" xml:space="preserve"><value>Memo (Markdown editor)</value></data>
+  <data name="Settings_Font_MemoMarkdownView" xml:space="preserve"><value>Memo (Markdown preview body)</value></data>
+  <data name="Settings_Font_MemoMarkdownCode" xml:space="preserve"><value>Memo (Markdown preview code)</value></data>
+  <data name="Settings_Font_ConverterUi" xml:space="preserve"><value>Developer Tools (UI)</value></data>
+  <data name="Settings_Font_ConverterEdit" xml:space="preserve"><value>Developer Tools (input/output)</value></data>
+  <data name="Settings_Font_ErrorListUi" xml:space="preserve"><value>Error Code List (UI)</value></data>
+  <data name="Settings_Font_ErrorListEdit" xml:space="preserve"><value>Error Code List (results)</value></data>
+  <data name="Settings_MasterTags" xml:space="preserve"><value>Master Tags</value></data>
+  <data name="Settings_TagRenameDuplicateTitle" xml:space="preserve"><value>Tag Already Exists</value></data>
+  <data name="Settings_TagRenameDuplicateMessage" xml:space="preserve"><value>A tag with this name already exists.</value></data>
+  <data name="Settings_TagRenameHint" xml:space="preserve"><value>Double-click to rename</value></data>
+  <data name="Settings_AddTag" xml:space="preserve"><value>Add</value></data>
+  <data name="Settings_NewTagPlaceholder" xml:space="preserve"><value>New tag name</value></data>
+  <data name="Settings_OpenDataFolder" xml:space="preserve"><value>Open Settings Folder</value></data>
+  <data name="Settings_CreateBackup" xml:space="preserve"><value>Create Backup</value></data>
+  <data name="Settings_RestoreBackup" xml:space="preserve"><value>Restore from Backup</value></data>
+  <data name="Settings_ResetToDefault" xml:space="preserve"><value>Reset to Default</value></data>
+  <data name="Backup_CreateSuccessTitle" xml:space="preserve"><value>Backup Created</value></data>
+  <data name="Backup_CreateSuccessMessage" xml:space="preserve"><value>Backup saved successfully.</value></data>
+  <data name="Backup_CreateFailedTitle" xml:space="preserve"><value>Backup Failed</value></data>
+  <data name="Backup_CreateFailedMessage" xml:space="preserve"><value>Failed to create backup: {0}</value></data>
+  <data name="Backup_RestoreConfirmTitle" xml:space="preserve"><value>Restore Backup</value></data>
+  <data name="Backup_RestoreConfirmMessage" xml:space="preserve"><value>Restoring a backup will overwrite your current clipboard history, screenshots, memos, and settings. HasamiBoard will close afterward so you can restart it. Continue?</value></data>
+  <data name="Backup_RestoreSuccessTitle" xml:space="preserve"><value>Restore Complete</value></data>
+  <data name="Backup_RestoreSuccessMessage" xml:space="preserve"><value>The backup was restored successfully. HasamiBoard will now close — please start it again to apply the changes.</value></data>
+  <data name="Backup_RestoreFailedTitle" xml:space="preserve"><value>Restore Failed</value></data>
+  <data name="Backup_RestoreFailedMessage" xml:space="preserve"><value>Failed to restore backup: {0}</value></data>
+  <data name="Settings_ResetConfirmTitle" xml:space="preserve"><value>Reset Settings</value></data>
+  <data name="Settings_ResetConfirmMessage" xml:space="preserve"><value>Reset all settings to their default values? Your clipboard history, screenshots, and memos will not be affected.</value></data>
+  <data name="Header_Converter" xml:space="preserve"><value>Developer Tools</value></data>
+  <data name="Header_ErrorList" xml:space="preserve"><value>Error Codes</value></data>
+  <data name="Converter_WindowTitle" xml:space="preserve"><value>Developer Tools</value></data>
+  <data name="Converter_Mode_Hash" xml:space="preserve"><value>Hash</value></data>
+  <data name="Converter_Mode_Base64" xml:space="preserve"><value>Base64</value></data>
+  <data name="Converter_Mode_Url" xml:space="preserve"><value>URL Encode/Decode</value></data>
+  <data name="Converter_Mode_Html" xml:space="preserve"><value>HTML Encode/Decode</value></data>
+  <data name="Converter_Mode_Json" xml:space="preserve"><value>JSON Format</value></data>
+  <data name="Converter_Mode_Xml" xml:space="preserve"><value>XML Format</value></data>
+  <data name="Converter_Mode_HtmlFormat" xml:space="preserve"><value>HTML Format</value></data>
+  <data name="Converter_Mode_Css" xml:space="preserve"><value>CSS Format</value></data>
+  <data name="Converter_Mode_JavaScript" xml:space="preserve"><value>JavaScript Format</value></data>
+  <data name="Converter_Mode_Sql" xml:space="preserve"><value>SQL Format</value></data>
+  <data name="Converter_Sql_KeywordCasing" xml:space="preserve"><value>Keyword Casing</value></data>
+  <data name="Converter_Sql_CasingUppercase" xml:space="preserve"><value>Uppercase</value></data>
+  <data name="Converter_Sql_CasingLowercase" xml:space="preserve"><value>Lowercase</value></data>
+  <data name="Converter_Sql_CasingPascalCase" xml:space="preserve"><value>PascalCase</value></data>
+  <data name="Converter_Sql_CommaPlacement" xml:space="preserve"><value>Comma Placement</value></data>
+  <data name="Converter_Sql_CommaTrailing" xml:space="preserve"><value>Trailing</value></data>
+  <data name="Converter_Sql_CommaLeading" xml:space="preserve"><value>Leading</value></data>
+  <data name="Converter_Sql_IndentSize" xml:space="preserve"><value>Indent Size</value></data>
+  <data name="Converter_Sql_AlignClauseBodies" xml:space="preserve"><value>Align clause bodies</value></data>
+  <data name="Converter_Mode_Timestamp" xml:space="preserve"><value>Unix Timestamp</value></data>
+  <data name="Converter_Mode_Uuid" xml:space="preserve"><value>UUID</value></data>
+  <data name="Converter_Mode_Password" xml:space="preserve"><value>Password Generate</value></data>
+  <data name="Converter_Input" xml:space="preserve"><value>Input</value></data>
+  <data name="Converter_Output" xml:space="preserve"><value>Output</value></data>
+  <data name="Converter_Encode" xml:space="preserve"><value>Encode</value></data>
+  <data name="Converter_Decode" xml:space="preserve"><value>Decode</value></data>
+  <data name="Converter_Format" xml:space="preserve"><value>Format</value></data>
+  <data name="Converter_Minify" xml:space="preserve"><value>Minify</value></data>
+  <data name="Converter_Swap" xml:space="preserve"><value>Swap output to input</value></data>
+  <data name="Converter_Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Converter_TimestampLabel" xml:space="preserve"><value>Unix timestamp (seconds)</value></data>
+  <data name="Converter_DateLabel" xml:space="preserve"><value>Date/time (yyyy/MM/dd HH:mm:ss or RFC3339/ISO8601)</value></data>
+  <data name="Converter_Rfc3339UtcLabel" xml:space="preserve"><value>RFC3339 / ISO8601 (UTC)</value></data>
+  <data name="Converter_Rfc3339LocalLabel" xml:space="preserve"><value>RFC3339 / ISO8601 (Local)</value></data>
+  <data name="Converter_UseNow" xml:space="preserve"><value>Now</value></data>
+  <data name="Converter_ToDate" xml:space="preserve"><value>To date/time</value></data>
+  <data name="Converter_ToTimestamp" xml:space="preserve"><value>To timestamp</value></data>
+  <data name="Converter_UuidVersionV4" xml:space="preserve"><value>v4 (Random)</value></data>
+  <data name="Converter_UuidVersionV5" xml:space="preserve"><value>v5 (Name-based)</value></data>
+  <data name="Converter_UuidVersionV7" xml:space="preserve"><value>v7 (Time-ordered)</value></data>
+  <data name="Converter_UuidNamespace" xml:space="preserve"><value>Namespace (UUID)</value></data>
+  <data name="Converter_UuidName" xml:space="preserve"><value>Name</value></data>
+  <data name="Converter_UuidNoHyphens" xml:space="preserve"><value>No hyphens</value></data>
+  <data name="Converter_UuidUppercase" xml:space="preserve"><value>Uppercase</value></data>
+  <data name="Converter_Generate" xml:space="preserve"><value>Generate</value></data>
+  <data name="Converter_PasswordLength" xml:space="preserve"><value>Length</value></data>
+  <data name="Converter_PasswordUppercase" xml:space="preserve"><value>Uppercase (A-Z)</value></data>
+  <data name="Converter_PasswordLowercase" xml:space="preserve"><value>Lowercase (a-z)</value></data>
+  <data name="Converter_PasswordDigits" xml:space="preserve"><value>Digits (0-9)</value></data>
+  <data name="Converter_PasswordSymbols" xml:space="preserve"><value>Symbols (!@#$%^&amp;*...)</value></data>
+  <data name="Converter_PasswordExcludeAmbiguous" xml:space="preserve"><value>Exclude ambiguous characters (0/O, 1/l/I)</value></data>
+  <data name="Converter_Password_NoCharacterSetSelected" xml:space="preserve"><value>Select at least one character type.</value></data>
+  <data name="Converter_Mode_RegexTester" xml:space="preserve"><value>Regex</value></data>
+  <data name="Converter_Regex_Pattern" xml:space="preserve"><value>Pattern</value></data>
+  <data name="Converter_Regex_PatternPlaceholder" xml:space="preserve"><value>/pattern/</value></data>
+  <data name="Converter_Regex_Sample_Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Converter_Regex_Sample_Date" xml:space="preserve"><value>Date</value></data>
+  <data name="Converter_Regex_Sample_Phone" xml:space="preserve"><value>Phone</value></data>
+  <data name="Converter_Regex_IgnoreCase" xml:space="preserve"><value>Case insensitive (i)</value></data>
+  <data name="Converter_Regex_Global" xml:space="preserve"><value>Global search (g)</value></data>
+  <data name="Converter_Regex_Multiline" xml:space="preserve"><value>Multiline (m)</value></data>
+  <data name="Converter_Regex_Interactive" xml:space="preserve"><value>Interactive (auto-evaluate)</value></data>
+  <data name="Converter_Regex_ShowMatchDetails" xml:space="preserve"><value>Show match details</value></data>
+  <data name="Converter_Regex_Evaluate" xml:space="preserve"><value>Run</value></data>
+  <data name="Converter_Regex_TestString" xml:space="preserve"><value>Test string</value></data>
+  <data name="Converter_Regex_HighlightLabel" xml:space="preserve"><value>Matches (highlighted)</value></data>
+  <data name="Converter_Regex_MatchCountFormat" xml:space="preserve"><value>{0} match(es)</value></data>
+  <data name="Converter_Regex_MatchCountTruncatedFormat" xml:space="preserve"><value>{0}+ matches (truncated)</value></data>
+  <data name="Converter_Regex_MatchListLabel" xml:space="preserve"><value>Match details</value></data>
+  <data name="Converter_Regex_EngineNote" xml:space="preserve"><value>Regex engine: .NET (System.Text.RegularExpressions)</value></data>
+  <data name="Converter_Regex_MatchHeaderFormat" xml:space="preserve"><value>Match #{0} (index {1})</value></data>
+  <data name="Converter_Regex_Token_D" xml:space="preserve"><value>\d - Digit (0-9)</value></data>
+  <data name="Converter_Regex_Token_NotD" xml:space="preserve"><value>\D - Non-digit</value></data>
+  <data name="Converter_Regex_Token_W" xml:space="preserve"><value>\w - Word character (letters, digits, underscore)</value></data>
+  <data name="Converter_Regex_Token_NotW" xml:space="preserve"><value>\W - Non-word character</value></data>
+  <data name="Converter_Regex_Token_S" xml:space="preserve"><value>\s - Whitespace character</value></data>
+  <data name="Converter_Regex_Token_NotS" xml:space="preserve"><value>\S - Non-whitespace character</value></data>
+  <data name="Converter_Regex_Token_Dot" xml:space="preserve"><value>. - Any character except newline</value></data>
+  <data name="Converter_Regex_Token_Plus" xml:space="preserve"><value>+ - One or more of the preceding element</value></data>
+  <data name="Converter_Regex_Token_Question" xml:space="preserve"><value>? - Zero or one of the preceding element (optional)</value></data>
+  <data name="Converter_Regex_Token_Caret" xml:space="preserve"><value>^ - Start of line/string</value></data>
+  <data name="Converter_Regex_Token_Dollar" xml:space="preserve"><value>$ - End of line/string</value></data>
+  <data name="Converter_Mode_JwtDecoder" xml:space="preserve"><value>JWT</value></data>
+  <data name="Converter_Mode_CaseConverter" xml:space="preserve"><value>Case Converter</value></data>
+  <data name="Converter_Mode_NumberBaseConverter" xml:space="preserve"><value>Number Base Converter</value></data>
+  <data name="Converter_Mode_QrCode" xml:space="preserve"><value>QR Code</value></data>
+  <data name="Converter_QrCode_GenerateSection" xml:space="preserve"><value>Generate</value></data>
+  <data name="Converter_QrCode_DecodeSection" xml:space="preserve"><value>Decode</value></data>
+  <data name="Converter_QrCode_EccLevel" xml:space="preserve"><value>Error correction</value></data>
+  <data name="Converter_QrCode_EccL" xml:space="preserve"><value>L (~7%)</value></data>
+  <data name="Converter_QrCode_EccM" xml:space="preserve"><value>M (~15%)</value></data>
+  <data name="Converter_QrCode_EccQ" xml:space="preserve"><value>Q (~25%)</value></data>
+  <data name="Converter_QrCode_EccH" xml:space="preserve"><value>H (~30%)</value></data>
+  <data name="Converter_QrCode_Size" xml:space="preserve"><value>Module size</value></data>
+  <data name="Converter_QrCode_CopyImage" xml:space="preserve"><value>Copy image</value></data>
+  <data name="Converter_QrCode_SaveImage" xml:space="preserve"><value>Save as...</value></data>
+  <data name="Converter_QrCode_BrowseImage" xml:space="preserve"><value>Choose image...</value></data>
+  <data name="Converter_QrCode_DecodeHint" xml:space="preserve"><value>Paste an image (Ctrl+V) or choose a file to decode a QR code.</value></data>
+  <data name="Converter_QrCode_NotDetected" xml:space="preserve"><value>No QR code detected in the image.</value></data>
+  <data name="Converter_Mode_CronParser" xml:space="preserve"><value>Cron Expression</value></data>
+  <data name="ConverterCategory_EncodeDecode" xml:space="preserve"><value>Encode / Decode</value></data>
+  <data name="ConverterCategory_Formatter" xml:space="preserve"><value>Formatters</value></data>
+  <data name="ConverterCategory_DateTime" xml:space="preserve"><value>Date &amp; Time</value></data>
+  <data name="ConverterCategory_Generator" xml:space="preserve"><value>Generators</value></data>
+  <data name="ConverterCategory_TextAnalysis" xml:space="preserve"><value>Text Analysis</value></data>
+  <data name="Converter_Mode_BasicAuth" xml:space="preserve"><value>Basic Auth</value></data>
+  <data name="Converter_BasicAuth_Username" xml:space="preserve"><value>Username</value></data>
+  <data name="Converter_BasicAuth_Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Converter_BasicAuth_Header" xml:space="preserve"><value>Authorization Header</value></data>
+  <data name="Converter_BasicAuth_UserInfoUrl" xml:space="preserve"><value>Userinfo URL</value></data>
+  <data name="Converter_BasicAuth_HtpasswdSection" xml:space="preserve"><value>.htpasswd Format (Apache / nginx)</value></data>
+  <data name="Converter_BasicAuth_Algorithm" xml:space="preserve"><value>Hash Algorithm</value></data>
+  <data name="Converter_BasicAuth_AlgorithmBcrypt" xml:space="preserve"><value>bcrypt (recommended)</value></data>
+  <data name="Converter_BasicAuth_AlgorithmApr1" xml:space="preserve"><value>APR1-MD5</value></data>
+  <data name="Converter_BasicAuth_AlgorithmSha1" xml:space="preserve"><value>SHA1 (legacy)</value></data>
+  <data name="Converter_BasicAuth_BcryptCost" xml:space="preserve"><value>Cost Factor</value></data>
+  <data name="Converter_BasicAuth_UsernameRequired" xml:space="preserve"><value>Enter a username.</value></data>
+  <data name="Converter_BasicAuth_UsernameNoColon" xml:space="preserve"><value>Username cannot contain a colon (:).</value></data>
+  <data name="Converter_Mode_Jq" xml:space="preserve"><value>jq</value></data>
+  <data name="Converter_Jq_Filter" xml:space="preserve"><value>Filter</value></data>
+  <data name="Converter_Jq_Run" xml:space="preserve"><value>Run</value></data>
+  <data name="Converter_Jq_RawOutput" xml:space="preserve"><value>Raw Output (-r)</value></data>
+  <data name="Converter_Jq_CompactOutput" xml:space="preserve"><value>Compact Output (-c)</value></data>
+  <data name="Converter_Jq_SlurpInput" xml:space="preserve"><value>Slurp (-s)</value></data>
+  <data name="Converter_Jq_NullInput" xml:space="preserve"><value>Null Input (-n)</value></data>
+  <data name="Converter_Jq_TreeTitle" xml:space="preserve"><value>Key Path Navigator</value></data>
+  <data name="Converter_Jq_Sample_Simple" xml:space="preserve"><value>Simple</value></data>
+  <data name="Converter_Jq_Sample_Nested" xml:space="preserve"><value>Nested</value></data>
+  <data name="Converter_Jq_Sample_Array" xml:space="preserve"><value>Array</value></data>
+  <data name="Converter_Jq_QuickFilters" xml:space="preserve"><value>Common Filters</value></data>
+  <data name="Converter_Jq_InteractiveMode" xml:space="preserve"><value>Interactive Mode (auto-run on change)</value></data>
+  <data name="Converter_Jq_Token_Identity" xml:space="preserve"><value>Identity (output the input as-is)</value></data>
+  <data name="Converter_Jq_Token_Iterate" xml:space="preserve"><value>Expand array/object elements</value></data>
+  <data name="Converter_Jq_Token_Field" xml:space="preserve"><value>Field access</value></data>
+  <data name="Converter_Jq_Token_Select" xml:space="preserve"><value>Filter by condition</value></data>
+  <data name="Converter_Jq_Token_Map" xml:space="preserve"><value>Transform each element</value></data>
+  <data name="Converter_Jq_Token_Keys" xml:space="preserve"><value>List object keys</value></data>
+  <data name="Converter_Jq_Token_Length" xml:space="preserve"><value>Element/character count</value></data>
+  <data name="Converter_Jq_Token_SortBy" xml:space="preserve"><value>Sort by the given key</value></data>
+  <data name="Converter_Jq_Token_ToEntries" xml:space="preserve"><value>Convert to key/value entries</value></data>
+  <data name="Converter_Cron_Expression" xml:space="preserve"><value>Cron Expression</value></data>
+  <data name="Converter_Cron_FieldsHintStandard" xml:space="preserve"><value>minute hour day month day-of-week</value></data>
+  <data name="Converter_Cron_FieldsHintWithSeconds" xml:space="preserve"><value>second minute hour day month day-of-week</value></data>
+  <data name="Converter_Cron_IncludeSeconds" xml:space="preserve"><value>Include seconds field (6 fields)</value></data>
+  <data name="Converter_Cron_FromDateTime" xml:space="preserve"><value>Calculate from</value></data>
+  <data name="Converter_Cron_FromDateTimePlaceholder" xml:space="preserve"><value>yyyy/MM/dd HH:mm:ss (blank = now)</value></data>
+  <data name="Converter_Cron_OccurrenceCount" xml:space="preserve"><value>Number of occurrences</value></data>
+  <data name="Converter_Cron_Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Converter_Cron_NextOccurrences" xml:space="preserve"><value>Next occurrences</value></data>
+  <data name="Converter_Cron_Frequency" xml:space="preserve"><value>Frequency</value></data>
+  <data name="Converter_Cron_Freq_EverySecond" xml:space="preserve"><value>Every second</value></data>
+  <data name="Converter_Cron_Freq_EveryMinute" xml:space="preserve"><value>Every minute</value></data>
+  <data name="Converter_Cron_Freq_Hourly" xml:space="preserve"><value>Hourly</value></data>
+  <data name="Converter_Cron_Freq_Daily" xml:space="preserve"><value>Daily</value></data>
+  <data name="Converter_Cron_Freq_Weekly" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Converter_Cron_Freq_Monthly" xml:space="preserve"><value>Monthly</value></data>
+  <data name="Converter_Cron_Freq_Yearly" xml:space="preserve"><value>Yearly</value></data>
+  <data name="Converter_Cron_Freq_Custom" xml:space="preserve"><value>Custom</value></data>
+  <data name="Converter_Cron_Builder_Interval" xml:space="preserve"><value>Interval (minutes)</value></data>
+  <data name="Converter_Cron_Builder_SecondInterval" xml:space="preserve"><value>Interval (seconds)</value></data>
+  <data name="Converter_Cron_Builder_Minute" xml:space="preserve"><value>Minute</value></data>
+  <data name="Converter_Cron_Builder_Time" xml:space="preserve"><value>Time</value></data>
+  <data name="Converter_Cron_Builder_DayOfWeek" xml:space="preserve"><value>Days of week</value></data>
+  <data name="Converter_Cron_Builder_DayOfMonth" xml:space="preserve"><value>Day</value></data>
+  <data name="Converter_Cron_Builder_Month" xml:space="preserve"><value>Month</value></data>
+  <data name="Converter_Cron_Builder_CustomHint" xml:space="preserve"><value>Edit the cron expression field below directly.</value></data>
+  <data name="Converter_Cron_Builder_SelectAtLeastOneDay" xml:space="preserve"><value>Select at least one day of the week.</value></data>
+  <data name="Converter_Cron_Day_Sun" xml:space="preserve"><value>Sun</value></data>
+  <data name="Converter_Cron_Day_Mon" xml:space="preserve"><value>Mon</value></data>
+  <data name="Converter_Cron_Day_Tue" xml:space="preserve"><value>Tue</value></data>
+  <data name="Converter_Cron_Day_Wed" xml:space="preserve"><value>Wed</value></data>
+  <data name="Converter_Cron_Day_Thu" xml:space="preserve"><value>Thu</value></data>
+  <data name="Converter_Cron_Day_Fri" xml:space="preserve"><value>Fri</value></data>
+  <data name="Converter_Cron_Day_Sat" xml:space="preserve"><value>Sat</value></data>
+  <data name="Converter_NumberBase_Decimal" xml:space="preserve"><value>Decimal</value></data>
+  <data name="Converter_NumberBase_Hex" xml:space="preserve"><value>Hexadecimal</value></data>
+  <data name="Converter_NumberBase_Octal" xml:space="preserve"><value>Octal</value></data>
+  <data name="Converter_NumberBase_Binary" xml:space="preserve"><value>Binary</value></data>
+  <data name="Converter_NumberBase_InvalidFormat" xml:space="preserve"><value>Invalid number for the selected base.</value></data>
+  <data name="Converter_NumberBase_UsePrefix" xml:space="preserve"><value>Add base prefix (0x / 0o / 0B)</value></data>
+  <data name="Converter_Jwt_Token" xml:space="preserve"><value>Token</value></data>
+  <data name="Converter_Jwt_TokenPlaceholder" xml:space="preserve"><value>xxxxx.yyyyy.zzzzz</value></data>
+  <data name="Converter_Jwt_InvalidFormat" xml:space="preserve"><value>Invalid JWT format. It must consist of three dot-separated, non-empty parts (header.payload.signature).</value></data>
+  <data name="Converter_Jwt_Sample_Basic" xml:space="preserve"><value>Basic</value></data>
+  <data name="Converter_Jwt_Sample_Expired" xml:space="preserve"><value>Expired</value></data>
+  <data name="Converter_Jwt_Sample_Roles" xml:space="preserve"><value>Roles</value></data>
+  <data name="Converter_Jwt_Header" xml:space="preserve"><value>Header</value></data>
+  <data name="Converter_Jwt_Payload" xml:space="preserve"><value>Payload</value></data>
+  <data name="Converter_Jwt_Signature" xml:space="preserve"><value>Signature</value></data>
+  <data name="Converter_Jwt_SignatureNote" xml:space="preserve"><value>Shown as-is; verification requires the secret/public key and is not performed.</value></data>
+  <data name="Converter_Jwt_ClaimDatesLabel" xml:space="preserve"><value>Timestamp claims</value></data>
+  <data name="Converter_Jwt_Expired" xml:space="preserve"><value>expired</value></data>
+  <data name="ErrorList_WindowTitle" xml:space="preserve"><value>Error Code Reference</value></data>
+  <data name="ErrorList_Mode_Http" xml:space="preserve"><value>HTTP Status</value></data>
+  <data name="ErrorList_Mode_Errno" xml:space="preserve"><value>POSIX errno.h</value></data>
+  <data name="ErrorList_Mode_WindowsError" xml:space="preserve"><value>Windows Error</value></data>
+  <data name="ErrorList_Mode_Smtp" xml:space="preserve"><value>SMTP Reply Code</value></data>
+  <data name="ErrorList_Search" xml:space="preserve"><value>Search by code, macro name, or message...</value></data>
+  <data name="ErrorList_LanguageEn" xml:space="preserve"><value>English</value></data>
+  <data name="ErrorList_LanguageJa" xml:space="preserve"><value>Japanese</value></data>
+  <data name="ErrorList_ColumnCode" xml:space="preserve"><value>Code</value></data>
+  <data name="ErrorList_ColumnMacro" xml:space="preserve"><value>Macro</value></data>
+  <data name="ErrorList_ColumnDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="ErrorList_NoResults" xml:space="preserve"><value>No matching entries.</value></data>
+  <data name="ErrorList_CopyAsJson" xml:space="preserve"><value>Copy as JSON</value></data>
+</root>

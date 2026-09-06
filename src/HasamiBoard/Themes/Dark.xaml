@@ -1,0 +1,31 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#1E1F22" />
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="#2B2D30" />
+    <SolidColorBrush x:Key="CardBorderBrush" Color="#3C3F41" />
+    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#E8E8E8" />
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#A0A0A0" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#4C93FF" />
+    <SolidColorBrush x:Key="AccentForegroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="HoverBrush" Color="#33405C" />
+    <SolidColorBrush x:Key="SeparatorBrush" Color="#3C3F41" />
+    <SolidColorBrush x:Key="DangerBrush" Color="#EF5350" />
+    <SolidColorBrush x:Key="InputBackgroundBrush" Color="#232426" />
+    <SolidColorBrush x:Key="InputBorderBrush" Color="#4A4D4F" />
+    <SolidColorBrush x:Key="FlashBrush" Color="#6B5D1E" />
+    <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="#1E1F22" />
+
+    <!-- 機能アイコンの配色 (設定/カラーピッカー/編集 等) -->
+    <SolidColorBrush x:Key="SettingsIconBrush" Color="#9FA8DA" />
+    <SolidColorBrush x:Key="ColorPickerIconBrush" Color="#F48FB1" />
+    <SolidColorBrush x:Key="EditIconBrush" Color="#64B5F6" />
+    <SolidColorBrush x:Key="CopyIconBrush" Color="#4DB6AC" />
+    <SolidColorBrush x:Key="TagIconBrush" Color="#CE93D8" />
+    <SolidColorBrush x:Key="SearchIconBrush" Color="#4DD0E1" />
+    <SolidColorBrush x:Key="FolderIconBrush" Color="#FFB74D" />
+    <SolidColorBrush x:Key="MemoIconBrush" Color="#81C784" />
+    <SolidColorBrush x:Key="ConverterIconBrush" Color="#4DD0E1" />
+    <SolidColorBrush x:Key="ErrorListIconBrush" Color="#FF8A65" />
+
+</ResourceDictionary>

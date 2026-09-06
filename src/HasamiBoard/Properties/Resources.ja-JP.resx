@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="Tab_History" xml:space="preserve"><value>クリップボード</value></data>
+  <data name="Tab_Screenshot" xml:space="preserve"><value>スクリーンショット</value></data>
+  <data name="Tab_Memo" xml:space="preserve"><value>メモ</value></data>
+
+  <data name="QuickFilter_Placeholder" xml:space="preserve"><value>検索... (#タグ)</value></data>
+  <data name="QuickFilter_Clear" xml:space="preserve"><value>フィルターをクリア</value></data>
+  <data name="VimHintBar" xml:space="preserve"><value>j:下 k:上 gg:一番上 G:一番下 dd:削除 yy:コピー a:編集 /:検索 | 📌:最前面 ⚙:設定</value></data>
+  <data name="RecordCount_Format" xml:space="preserve"><value>レコード: {0}/{1}</value></data>
+
+  <data name="Header_Pin" xml:space="preserve"><value>常に手前に表示</value></data>
+  <data name="Header_ColorPicker" xml:space="preserve"><value>カラーピッカー</value></data>
+  <data name="Header_Settings" xml:space="preserve"><value>設定</value></data>
+
+  <data name="Confirm_ExitTitle" xml:space="preserve"><value>終了確認</value></data>
+  <data name="Confirm_ExitMessage" xml:space="preserve"><value>HasamiBoard を終了してもよろしいですか？</value></data>
+
+  <data name="Button_Yes" xml:space="preserve"><value>はい</value></data>
+  <data name="Button_No" xml:space="preserve"><value>いいえ</value></data>
+  <data name="Button_Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Button_Cancel" xml:space="preserve"><value>キャンセル</value></data>
+  <data name="Button_Delete" xml:space="preserve"><value>削除</value></data>
+  <data name="Button_Edit" xml:space="preserve"><value>編集</value></data>
+  <data name="Button_Pin" xml:space="preserve"><value>ピン留め</value></data>
+  <data name="Button_MoveUp" xml:space="preserve"><value>上へ移動</value></data>
+  <data name="Button_MoveDown" xml:space="preserve"><value>下へ移動</value></data>
+  <data name="Button_Copy" xml:space="preserve"><value>クリップボードへコピー</value></data>
+  <data name="Button_ClearAll" xml:space="preserve"><value>すべてクリア</value></data>
+
+  <data name="Settings_Title" xml:space="preserve"><value>設定</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>表示言語</value></data>
+  <data name="Settings_Language_Auto" xml:space="preserve"><value>自動 (OS言語連動)</value></data>
+  <data name="Settings_Language_Japanese" xml:space="preserve"><value>日本語 (Japanese)</value></data>
+  <data name="Settings_Language_English" xml:space="preserve"><value>English</value></data>
+  <data name="Settings_DarkMode" xml:space="preserve"><value>ダークモード</value></data>
+
+  <data name="Tray_Show" xml:space="preserve"><value>表示 (&amp;S)</value></data>
+  <data name="Tray_Exit" xml:space="preserve"><value>終了 (&amp;X)</value></data>
+
+  <data name="AppTitle" xml:space="preserve"><value>HasamiBoard</value></data>
+  <data name="App_UnhandledException_Message" xml:space="preserve"><value>HasamiBoard で予期しないエラーが発生しました。詳細は crash.log を確認してください。</value></data>
+  <data name="App_AlreadyRunning_Message" xml:space="preserve"><value>HasamiBoard は既に起動しています。</value></data>
+  <data name="App_StartupFailed_Message" xml:space="preserve"><value>HasamiBoard を起動できませんでした。詳細は crash.log を確認してください。</value></data>
+
+  <data name="History_Empty" xml:space="preserve"><value>クリップボード履歴はまだありません。テキストをコピーすると追加されます。</value></data>
+  <data name="History_AddTag" xml:space="preserve"><value>タグを追加</value></data>
+  <data name="History_NoMoreTags" xml:space="preserve"><value>すべてのマスタータグが付与済みです。</value></data>
+  <data name="ClearAll_ConfirmTitle" xml:space="preserve"><value>すべてクリア</value></data>
+  <data name="ClearAll_ConfirmMessage" xml:space="preserve"><value>ピン留めされていない項目をすべて削除しますか？ピン留め項目は保護されます。</value></data>
+  <data name="Tooltip_AddTag" xml:space="preserve"><value>タグを追加</value></data>
+  <data name="Tooltip_Unpin" xml:space="preserve"><value>ピン留め解除</value></data>
+
+  <data name="Screenshot_Empty" xml:space="preserve"><value>スクリーンショットはまだありません。画像をコピーすると追加されます。</value></data>
+  <data name="Button_CleanOrphans" xml:space="preserve"><value>未登録画像を一括削除</value></data>
+  <data name="Tooltip_OpenImage" xml:space="preserve"><value>画像を表示</value></data>
+  <data name="Tooltip_OpenFolder" xml:space="preserve"><value>フォルダを開く</value></data>
+  <data name="Tooltip_CopyImage" xml:space="preserve"><value>画像のコピー</value></data>
+  <data name="Tooltip_CopyNote" xml:space="preserve"><value>メモをコピー</value></data>
+  <data name="Tooltip_EditNote" xml:space="preserve"><value>編集</value></data>
+  <data name="Cleanup_ResultTitle" xml:space="preserve"><value>クリーンアップ完了</value></data>
+  <data name="Cleanup_ResultMessage" xml:space="preserve"><value>未登録ファイルを {0} 件削除しました。</value></data>
+  <data name="Cleanup_ConfirmTitle" xml:space="preserve"><value>未登録画像の一括削除</value></data>
+  <data name="Cleanup_ConfirmMessage" xml:space="preserve"><value>未登録のスクリーンショット画像ファイルをすべて削除しますか？この操作は取り消せません。</value></data>
+  <data name="Cleanup_ConfirmMessage_Memo" xml:space="preserve"><value>未登録のメモ画像ファイルをすべて削除しますか？この操作は取り消せません。</value></data>
+  <data name="Tooltip_RemoveTag" xml:space="preserve"><value>タグを解除</value></data>
+  <data name="Ocr_LanguagePackMissingTitle" xml:space="preserve"><value>OCR言語パックが必要です</value></data>
+  <data name="Ocr_LanguagePackMissingMessage" xml:space="preserve"><value>OCR用の言語パックがインストールされていないため、文字読み取りを実行できません。Windowsの設定 &gt; 時刻と言語 &gt; 言語と地域 から、お使いの言語を選択し、オプション機能の「光学式文字認識」を追加してください。</value></data>
+  <data name="Ocr_NoteEditInProgressTitle" xml:space="preserve"><value>OCR結果を反映できません</value></data>
+  <data name="Ocr_NoteEditInProgressMessage" xml:space="preserve"><value>このメモは編集中のため、OCRの認識結果を反映できませんでした。編集を終えてから再度実行してください。</value></data>
+  <data name="ContextMenu_EditNote" xml:space="preserve"><value>編集</value></data>
+  <data name="ContextMenu_CreateMemo" xml:space="preserve"><value>メモを作成</value></data>
+  <data name="ContextMenu_AnalyzeQrCode" xml:space="preserve"><value>QRコードを解析</value></data>
+
+  <data name="Selection_Count" xml:space="preserve"><value>{0}件選択中</value></data>
+  <data name="Selection_AddTag" xml:space="preserve"><value>タグを付与</value></data>
+  <data name="Selection_DeleteConfirmTitle" xml:space="preserve"><value>選択項目の削除</value></data>
+  <data name="Selection_DeleteConfirmMessage" xml:space="preserve"><value>選択した{0}件を削除しますか？この操作は取り消せません。</value></data>
+
+  <data name="Template_ManagerTitle" xml:space="preserve"><value>メモテンプレート</value></data>
+  <data name="Template_New" xml:space="preserve"><value>新規テンプレート</value></data>
+  <data name="Template_NewTitle" xml:space="preserve"><value>新規テンプレート</value></data>
+  <data name="Template_EditTitle" xml:space="preserve"><value>テンプレートを編集</value></data>
+  <data name="Template_NamePlaceholder" xml:space="preserve"><value>テンプレート名</value></data>
+  <data name="Template_PlaceholderHint" xml:space="preserve"><value>利用可能なプレースホルダー: {date} {time} {datetime} {year} {month} {day} （テンプレート適用時に展開されます）</value></data>
+  <data name="Template_Empty" xml:space="preserve"><value>テンプレートはまだありません。「新規テンプレート」から作成できます。</value></data>
+  <data name="Template_Blank" xml:space="preserve"><value>新規作成</value></data>
+  <data name="Template_SaveAsTemplate" xml:space="preserve"><value>テンプレートとして保存</value></data>
+  <data name="Template_DeleteConfirmTitle" xml:space="preserve"><value>テンプレートの削除</value></data>
+  <data name="Template_DeleteConfirmMessage" xml:space="preserve"><value>テンプレート「{0}」を削除しますか？この操作は取り消せません。</value></data>
+
+  <data name="Memo_Empty" xml:space="preserve"><value>メモはまだありません。+ ボタンから作成できます。</value></data>
+  <data name="Memo_TitlePlaceholder" xml:space="preserve"><value>タイトル</value></data>
+  <data name="Memo_Mode_Text" xml:space="preserve"><value>テキスト</value></data>
+  <data name="Memo_Mode_Markdown" xml:space="preserve"><value>マークダウン</value></data>
+  <data name="Memo_NewTitle" xml:space="preserve"><value>新規メモ</value></data>
+  <data name="Memo_EditTitle" xml:space="preserve"><value>メモを編集</value></data>
+  <data name="Button_New" xml:space="preserve"><value>新規</value></data>
+  <data name="Tooltip_Ocr" xml:space="preserve"><value>OCR (文字読み取り)</value></data>
+
+  <data name="Settings_ItemHeight" xml:space="preserve"><value>表示エリアの高さ</value></data>
+  <data name="Settings_ThumbnailHeight" xml:space="preserve"><value>サムネイル高さ</value></data>
+  <data name="Settings_MaxHistoryCount" xml:space="preserve"><value>クリップボード履歴保持数</value></data>
+  <data name="Settings_MaxScreenshotCount" xml:space="preserve"><value>スクリーンショット保持数</value></data>
+  <data name="Settings_QuickFilterVisible" xml:space="preserve"><value>クイックフィルターバーを表示</value></data>
+  <data name="Settings_AutoStart" xml:space="preserve"><value>自動起動</value></data>
+  <data name="Settings_FeatureToggles" xml:space="preserve"><value>機能の有効/無効</value></data>
+  <data name="Settings_Feature_History" xml:space="preserve"><value>クリップボード履歴</value></data>
+  <data name="Settings_Feature_Screenshot" xml:space="preserve"><value>スクリーンショット</value></data>
+  <data name="Settings_Feature_Memo" xml:space="preserve"><value>メモ</value></data>
+  <data name="Settings_Feature_Converter" xml:space="preserve"><value>開発ツール</value></data>
+  <data name="Settings_ConverterModes" xml:space="preserve"><value>開発ツールのモード</value></data>
+  <data name="Settings_ScreenshotFormat" xml:space="preserve"><value>スクリーンショット保存形式</value></data>
+  <data name="Settings_JpegQuality" xml:space="preserve"><value>JPEG画質</value></data>
+  <data name="Settings_WebpQuality" xml:space="preserve"><value>WebP画質</value></data>
+  <data name="Settings_WebpLossless" xml:space="preserve"><value>WebP可逆圧縮</value></data>
+  <data name="Settings_DominantColor" xml:space="preserve"><value>主要色を自動抽出</value></data>
+  <data name="Settings_ScreenshotHotkey" xml:space="preserve"><value>スクリーンショットホットキー</value></data>
+  <data name="Settings_ColorPickerHotkey" xml:space="preserve"><value>カラーピッカーホットキー</value></data>
+  <data name="Settings_ConverterHotkey" xml:space="preserve"><value>開発ツールホットキー</value></data>
+  <data name="Settings_ErrorListHotkey" xml:space="preserve"><value>エラーコード一覧ホットキー</value></data>
+  <data name="Settings_HotkeyEnabled" xml:space="preserve"><value>有効</value></data>
+  <data name="Settings_Tab_General" xml:space="preserve"><value>一般</value></data>
+  <data name="Settings_Tab_Screenshot" xml:space="preserve"><value>スクリーンショット</value></data>
+  <data name="Settings_Tab_Tools" xml:space="preserve"><value>ツール</value></data>
+  <data name="MemoFontPanel_Title" xml:space="preserve"><value>フォント設定</value></data>
+  <data name="MemoFontPanel_Text" xml:space="preserve"><value>テキスト</value></data>
+  <data name="MemoFontPanel_MarkdownEdit" xml:space="preserve"><value>Markdownエディタ</value></data>
+  <data name="MemoFontPanel_MarkdownView" xml:space="preserve"><value>プレビュー本文</value></data>
+  <data name="MemoFontPanel_MarkdownCode" xml:space="preserve"><value>プレビューコード</value></data>
+  <data name="Settings_Fonts" xml:space="preserve"><value>フォント設定</value></data>
+  <data name="Settings_Font_History" xml:space="preserve"><value>クリップボード履歴</value></data>
+  <data name="Settings_Font_ScreenshotMemo" xml:space="preserve"><value>スクリーンショットのメモ</value></data>
+  <data name="Settings_Font_MemoText" xml:space="preserve"><value>メモ (テキストモード)</value></data>
+  <data name="Settings_Font_MemoMarkdownEdit" xml:space="preserve"><value>メモ (Markdownエディタ)</value></data>
+  <data name="Settings_Font_MemoMarkdownView" xml:space="preserve"><value>メモ (Markdownプレビュー本文)</value></data>
+  <data name="Settings_Font_MemoMarkdownCode" xml:space="preserve"><value>メモ (Markdownプレビューコード)</value></data>
+  <data name="Settings_Font_ConverterUi" xml:space="preserve"><value>開発ツール (UI)</value></data>
+  <data name="Settings_Font_ConverterEdit" xml:space="preserve"><value>開発ツール (入力/出力欄)</value></data>
+  <data name="Settings_Font_ErrorListUi" xml:space="preserve"><value>エラーコード一覧 (UI)</value></data>
+  <data name="Settings_Font_ErrorListEdit" xml:space="preserve"><value>エラーコード一覧 (結果表示部)</value></data>
+  <data name="Settings_MasterTags" xml:space="preserve"><value>マスタータグ管理</value></data>
+  <data name="Settings_TagRenameDuplicateTitle" xml:space="preserve"><value>同名のタグが存在します</value></data>
+  <data name="Settings_TagRenameDuplicateMessage" xml:space="preserve"><value>この名前のタグは既に存在します。</value></data>
+  <data name="Settings_TagRenameHint" xml:space="preserve"><value>ダブルクリックで名前を変更</value></data>
+  <data name="Settings_AddTag" xml:space="preserve"><value>追加</value></data>
+  <data name="Settings_NewTagPlaceholder" xml:space="preserve"><value>新しいタグ名</value></data>
+  <data name="Settings_OpenDataFolder" xml:space="preserve"><value>設定ファイルのフォルダを開く</value></data>
+  <data name="Settings_CreateBackup" xml:space="preserve"><value>バックアップを作成</value></data>
+  <data name="Settings_RestoreBackup" xml:space="preserve"><value>バックアップから復元</value></data>
+  <data name="Settings_ResetToDefault" xml:space="preserve"><value>デフォルト設定に戻す</value></data>
+  <data name="Backup_CreateSuccessTitle" xml:space="preserve"><value>バックアップ完了</value></data>
+  <data name="Backup_CreateSuccessMessage" xml:space="preserve"><value>バックアップを保存しました。</value></data>
+  <data name="Backup_CreateFailedTitle" xml:space="preserve"><value>バックアップに失敗しました</value></data>
+  <data name="Backup_CreateFailedMessage" xml:space="preserve"><value>バックアップの作成に失敗しました: {0}</value></data>
+  <data name="Backup_RestoreConfirmTitle" xml:space="preserve"><value>バックアップの復元</value></data>
+  <data name="Backup_RestoreConfirmMessage" xml:space="preserve"><value>バックアップを復元すると、現在のクリップボード履歴・スクリーンショット・メモ・設定がすべて上書きされます。復元後はHasamiBoardを終了しますので、再度起動し直してください。続行しますか？</value></data>
+  <data name="Backup_RestoreSuccessTitle" xml:space="preserve"><value>復元完了</value></data>
+  <data name="Backup_RestoreSuccessMessage" xml:space="preserve"><value>バックアップの復元が完了しました。変更を反映するため、HasamiBoardを終了します。再度起動し直してください。</value></data>
+  <data name="Backup_RestoreFailedTitle" xml:space="preserve"><value>復元に失敗しました</value></data>
+  <data name="Backup_RestoreFailedMessage" xml:space="preserve"><value>バックアップの復元に失敗しました: {0}</value></data>
+  <data name="Settings_ResetConfirmTitle" xml:space="preserve"><value>設定のリセット</value></data>
+  <data name="Settings_ResetConfirmMessage" xml:space="preserve"><value>すべての設定をデフォルト値に戻しますか？クリップボード履歴・スクリーンショット・メモのデータは保護されます。</value></data>
+  <data name="Header_Converter" xml:space="preserve"><value>開発ツール</value></data>
+  <data name="Header_ErrorList" xml:space="preserve"><value>エラーコード一覧</value></data>
+  <data name="Converter_WindowTitle" xml:space="preserve"><value>開発ツール</value></data>
+  <data name="Converter_Mode_Hash" xml:space="preserve"><value>ハッシュ生成</value></data>
+  <data name="Converter_Mode_Base64" xml:space="preserve"><value>Base64</value></data>
+  <data name="Converter_Mode_Url" xml:space="preserve"><value>URL</value></data>
+  <data name="Converter_Mode_Html" xml:space="preserve"><value>HTML</value></data>
+  <data name="Converter_Mode_Json" xml:space="preserve"><value>JSON</value></data>
+  <data name="Converter_Mode_Xml" xml:space="preserve"><value>XML</value></data>
+  <data name="Converter_Mode_HtmlFormat" xml:space="preserve"><value>HTML</value></data>
+  <data name="Converter_Mode_Css" xml:space="preserve"><value>CSS</value></data>
+  <data name="Converter_Mode_JavaScript" xml:space="preserve"><value>JavaScript</value></data>
+  <data name="Converter_Mode_Sql" xml:space="preserve"><value>SQL</value></data>
+  <data name="Converter_Sql_KeywordCasing" xml:space="preserve"><value>キーワードの大文字/小文字</value></data>
+  <data name="Converter_Sql_CasingUppercase" xml:space="preserve"><value>大文字</value></data>
+  <data name="Converter_Sql_CasingLowercase" xml:space="preserve"><value>小文字</value></data>
+  <data name="Converter_Sql_CasingPascalCase" xml:space="preserve"><value>パスカルケース</value></data>
+  <data name="Converter_Sql_CommaPlacement" xml:space="preserve"><value>カンマの位置</value></data>
+  <data name="Converter_Sql_CommaTrailing" xml:space="preserve"><value>末尾</value></data>
+  <data name="Converter_Sql_CommaLeading" xml:space="preserve"><value>先頭</value></data>
+  <data name="Converter_Sql_IndentSize" xml:space="preserve"><value>インデント幅</value></data>
+  <data name="Converter_Sql_AlignClauseBodies" xml:space="preserve"><value>句の本体を整列</value></data>
+  <data name="Converter_Mode_Timestamp" xml:space="preserve"><value>Unixタイムスタンプ</value></data>
+  <data name="Converter_Mode_Uuid" xml:space="preserve"><value>UUID</value></data>
+  <data name="Converter_Mode_Password" xml:space="preserve"><value>パスワード</value></data>
+  <data name="Converter_Input" xml:space="preserve"><value>入力</value></data>
+  <data name="Converter_Output" xml:space="preserve"><value>出力</value></data>
+  <data name="Converter_Encode" xml:space="preserve"><value>エンコード</value></data>
+  <data name="Converter_Decode" xml:space="preserve"><value>デコード</value></data>
+  <data name="Converter_Format" xml:space="preserve"><value>整形</value></data>
+  <data name="Converter_Minify" xml:space="preserve"><value>圧縮</value></data>
+  <data name="Converter_Swap" xml:space="preserve"><value>出力を入力へ</value></data>
+  <data name="Converter_Clear" xml:space="preserve"><value>クリア</value></data>
+  <data name="Converter_TimestampLabel" xml:space="preserve"><value>Unixタイムスタンプ（秒）</value></data>
+  <data name="Converter_DateLabel" xml:space="preserve"><value>日時 (yyyy/MM/dd HH:mm:ss または RFC3339/ISO8601)</value></data>
+  <data name="Converter_Rfc3339UtcLabel" xml:space="preserve"><value>RFC3339 / ISO8601 (UTC)</value></data>
+  <data name="Converter_Rfc3339LocalLabel" xml:space="preserve"><value>RFC3339 / ISO8601 (ローカル)</value></data>
+  <data name="Converter_UseNow" xml:space="preserve"><value>今</value></data>
+  <data name="Converter_ToDate" xml:space="preserve"><value>日時に変換</value></data>
+  <data name="Converter_ToTimestamp" xml:space="preserve"><value>タイムスタンプに変換</value></data>
+  <data name="Converter_UuidVersionV4" xml:space="preserve"><value>v4 (ランダム)</value></data>
+  <data name="Converter_UuidVersionV5" xml:space="preserve"><value>v5 (名前ベース)</value></data>
+  <data name="Converter_UuidVersionV7" xml:space="preserve"><value>v7 (時刻順)</value></data>
+  <data name="Converter_UuidNamespace" xml:space="preserve"><value>名前空間 (UUID)</value></data>
+  <data name="Converter_UuidName" xml:space="preserve"><value>名前</value></data>
+  <data name="Converter_UuidNoHyphens" xml:space="preserve"><value>ハイフンなし</value></data>
+  <data name="Converter_UuidUppercase" xml:space="preserve"><value>大文字</value></data>
+  <data name="Converter_Generate" xml:space="preserve"><value>生成</value></data>
+  <data name="Converter_PasswordLength" xml:space="preserve"><value>文字数</value></data>
+  <data name="Converter_PasswordUppercase" xml:space="preserve"><value>大文字 (A-Z)</value></data>
+  <data name="Converter_PasswordLowercase" xml:space="preserve"><value>小文字 (a-z)</value></data>
+  <data name="Converter_PasswordDigits" xml:space="preserve"><value>数字 (0-9)</value></data>
+  <data name="Converter_PasswordSymbols" xml:space="preserve"><value>記号 (!@#$%^&amp;*...)</value></data>
+  <data name="Converter_PasswordExcludeAmbiguous" xml:space="preserve"><value>紛らわしい文字を除外 (0/O, 1/l/I)</value></data>
+  <data name="Converter_Password_NoCharacterSetSelected" xml:space="preserve"><value>少なくとも1つの文字種を選択してください。</value></data>
+  <data name="Converter_Mode_RegexTester" xml:space="preserve"><value>正規表現</value></data>
+  <data name="Converter_Regex_Pattern" xml:space="preserve"><value>パターン</value></data>
+  <data name="Converter_Regex_PatternPlaceholder" xml:space="preserve"><value>/pattern/</value></data>
+  <data name="Converter_Regex_Sample_Email" xml:space="preserve"><value>メール</value></data>
+  <data name="Converter_Regex_Sample_Date" xml:space="preserve"><value>日付</value></data>
+  <data name="Converter_Regex_Sample_Phone" xml:space="preserve"><value>電話番号</value></data>
+  <data name="Converter_Regex_IgnoreCase" xml:space="preserve"><value>大文字小文字を区別しない (i)</value></data>
+  <data name="Converter_Regex_Global" xml:space="preserve"><value>グローバル検索 (g)</value></data>
+  <data name="Converter_Regex_Multiline" xml:space="preserve"><value>複数行モード (m)</value></data>
+  <data name="Converter_Regex_Interactive" xml:space="preserve"><value>インタラクティブ (自動評価)</value></data>
+  <data name="Converter_Regex_ShowMatchDetails" xml:space="preserve"><value>マッチ詳細を表示</value></data>
+  <data name="Converter_Regex_Evaluate" xml:space="preserve"><value>実行</value></data>
+  <data name="Converter_Regex_TestString" xml:space="preserve"><value>テスト文字列</value></data>
+  <data name="Converter_Regex_HighlightLabel" xml:space="preserve"><value>マッチ箇所ハイライト</value></data>
+  <data name="Converter_Regex_MatchCountFormat" xml:space="preserve"><value>{0} 件マッチ</value></data>
+  <data name="Converter_Regex_MatchCountTruncatedFormat" xml:space="preserve"><value>{0}+ 件マッチ (省略表示)</value></data>
+  <data name="Converter_Regex_MatchListLabel" xml:space="preserve"><value>マッチ詳細</value></data>
+  <data name="Converter_Regex_EngineNote" xml:space="preserve"><value>正規表現エンジン: .NET (System.Text.RegularExpressions)</value></data>
+  <data name="Converter_Regex_MatchHeaderFormat" xml:space="preserve"><value>マッチ #{0} (位置 {1})</value></data>
+  <data name="Converter_Regex_Token_D" xml:space="preserve"><value>\d - 数字 (0-9)</value></data>
+  <data name="Converter_Regex_Token_NotD" xml:space="preserve"><value>\D - 数字以外</value></data>
+  <data name="Converter_Regex_Token_W" xml:space="preserve"><value>\w - 単語文字 (英数字とアンダースコア)</value></data>
+  <data name="Converter_Regex_Token_NotW" xml:space="preserve"><value>\W - 単語文字以外</value></data>
+  <data name="Converter_Regex_Token_S" xml:space="preserve"><value>\s - 空白文字</value></data>
+  <data name="Converter_Regex_Token_NotS" xml:space="preserve"><value>\S - 空白文字以外</value></data>
+  <data name="Converter_Regex_Token_Dot" xml:space="preserve"><value>. - 改行以外の任意の1文字</value></data>
+  <data name="Converter_Regex_Token_Plus" xml:space="preserve"><value>+ - 直前の要素の1回以上の繰り返し</value></data>
+  <data name="Converter_Regex_Token_Question" xml:space="preserve"><value>? - 直前の要素の0回または1回 (省略可能)</value></data>
+  <data name="Converter_Regex_Token_Caret" xml:space="preserve"><value>^ - 行/文字列の先頭</value></data>
+  <data name="Converter_Regex_Token_Dollar" xml:space="preserve"><value>$ - 行/文字列の末尾</value></data>
+  <data name="Converter_Mode_JwtDecoder" xml:space="preserve"><value>JWT</value></data>
+  <data name="Converter_Mode_CaseConverter" xml:space="preserve"><value>ケース変換</value></data>
+  <data name="Converter_Mode_NumberBaseConverter" xml:space="preserve"><value>進数変換</value></data>
+  <data name="Converter_Mode_QrCode" xml:space="preserve"><value>QRコード</value></data>
+  <data name="Converter_QrCode_GenerateSection" xml:space="preserve"><value>生成</value></data>
+  <data name="Converter_QrCode_DecodeSection" xml:space="preserve"><value>デコード</value></data>
+  <data name="Converter_QrCode_EccLevel" xml:space="preserve"><value>誤り訂正レベル</value></data>
+  <data name="Converter_QrCode_EccL" xml:space="preserve"><value>L (約7%)</value></data>
+  <data name="Converter_QrCode_EccM" xml:space="preserve"><value>M (約15%)</value></data>
+  <data name="Converter_QrCode_EccQ" xml:space="preserve"><value>Q (約25%)</value></data>
+  <data name="Converter_QrCode_EccH" xml:space="preserve"><value>H (約30%)</value></data>
+  <data name="Converter_QrCode_Size" xml:space="preserve"><value>サイズ (モジュール)</value></data>
+  <data name="Converter_QrCode_CopyImage" xml:space="preserve"><value>画像をコピー</value></data>
+  <data name="Converter_QrCode_SaveImage" xml:space="preserve"><value>名前を付けて保存...</value></data>
+  <data name="Converter_QrCode_BrowseImage" xml:space="preserve"><value>画像を選択...</value></data>
+  <data name="Converter_QrCode_DecodeHint" xml:space="preserve"><value>画像を貼り付ける (Ctrl+V) か、ファイルを選択してQRコードを読み取ります。</value></data>
+  <data name="Converter_QrCode_NotDetected" xml:space="preserve"><value>画像内にQRコードが見つかりませんでした。</value></data>
+  <data name="Converter_Mode_CronParser" xml:space="preserve"><value>Cron式</value></data>
+  <data name="ConverterCategory_EncodeDecode" xml:space="preserve"><value>エンコード/デコード</value></data>
+  <data name="ConverterCategory_Formatter" xml:space="preserve"><value>フォーマッター</value></data>
+  <data name="ConverterCategory_DateTime" xml:space="preserve"><value>日時</value></data>
+  <data name="ConverterCategory_Generator" xml:space="preserve"><value>生成</value></data>
+  <data name="ConverterCategory_TextAnalysis" xml:space="preserve"><value>解析</value></data>
+  <data name="Converter_Mode_BasicAuth" xml:space="preserve"><value>Basic認証</value></data>
+  <data name="Converter_BasicAuth_Username" xml:space="preserve"><value>ユーザー名</value></data>
+  <data name="Converter_BasicAuth_Password" xml:space="preserve"><value>パスワード</value></data>
+  <data name="Converter_BasicAuth_Header" xml:space="preserve"><value>Authorizationヘッダー</value></data>
+  <data name="Converter_BasicAuth_UserInfoUrl" xml:space="preserve"><value>userinfo形式URL</value></data>
+  <data name="Converter_BasicAuth_HtpasswdSection" xml:space="preserve"><value>.htpasswd形式 (Apache / nginx)</value></data>
+  <data name="Converter_BasicAuth_Algorithm" xml:space="preserve"><value>ハッシュ方式</value></data>
+  <data name="Converter_BasicAuth_AlgorithmBcrypt" xml:space="preserve"><value>bcrypt (推奨)</value></data>
+  <data name="Converter_BasicAuth_AlgorithmApr1" xml:space="preserve"><value>APR1-MD5</value></data>
+  <data name="Converter_BasicAuth_AlgorithmSha1" xml:space="preserve"><value>SHA1 (レガシー)</value></data>
+  <data name="Converter_BasicAuth_BcryptCost" xml:space="preserve"><value>コスト係数</value></data>
+  <data name="Converter_BasicAuth_UsernameRequired" xml:space="preserve"><value>ユーザー名を入力してください。</value></data>
+  <data name="Converter_BasicAuth_UsernameNoColon" xml:space="preserve"><value>ユーザー名に「:」は使用できません。</value></data>
+  <data name="Converter_Mode_Jq" xml:space="preserve"><value>jq</value></data>
+  <data name="Converter_Jq_Filter" xml:space="preserve"><value>フィルタ</value></data>
+  <data name="Converter_Jq_Run" xml:space="preserve"><value>実行</value></data>
+  <data name="Converter_Jq_RawOutput" xml:space="preserve"><value>生文字列出力 (-r)</value></data>
+  <data name="Converter_Jq_CompactOutput" xml:space="preserve"><value>コンパクト出力 (-c)</value></data>
+  <data name="Converter_Jq_SlurpInput" xml:space="preserve"><value>Slurpモード (-s)</value></data>
+  <data name="Converter_Jq_NullInput" xml:space="preserve"><value>Null入力 (-n)</value></data>
+  <data name="Converter_Jq_TreeTitle" xml:space="preserve"><value>キーパス・ナビゲーター</value></data>
+  <data name="Converter_Jq_Sample_Simple" xml:space="preserve"><value>シンプル</value></data>
+  <data name="Converter_Jq_Sample_Nested" xml:space="preserve"><value>ネスト</value></data>
+  <data name="Converter_Jq_Sample_Array" xml:space="preserve"><value>配列</value></data>
+  <data name="Converter_Jq_QuickFilters" xml:space="preserve"><value>よく使うフィルタ</value></data>
+  <data name="Converter_Jq_InteractiveMode" xml:space="preserve"><value>インタラクティブモード (変更時に自動実行)</value></data>
+  <data name="Converter_Jq_Token_Identity" xml:space="preserve"><value>恒等 (入力をそのまま出力)</value></data>
+  <data name="Converter_Jq_Token_Iterate" xml:space="preserve"><value>配列/オブジェクトの展開</value></data>
+  <data name="Converter_Jq_Token_Field" xml:space="preserve"><value>フィールドアクセス</value></data>
+  <data name="Converter_Jq_Token_Select" xml:space="preserve"><value>条件で絞り込み</value></data>
+  <data name="Converter_Jq_Token_Map" xml:space="preserve"><value>各要素を変換</value></data>
+  <data name="Converter_Jq_Token_Keys" xml:space="preserve"><value>キー一覧</value></data>
+  <data name="Converter_Jq_Token_Length" xml:space="preserve"><value>要素数/文字数</value></data>
+  <data name="Converter_Jq_Token_SortBy" xml:space="preserve"><value>指定キーでソート</value></data>
+  <data name="Converter_Jq_Token_ToEntries" xml:space="preserve"><value>key/value配列に変換</value></data>
+  <data name="Converter_Cron_Expression" xml:space="preserve"><value>Cron式</value></data>
+  <data name="Converter_Cron_FieldsHintStandard" xml:space="preserve"><value>分 時 日 月 曜日</value></data>
+  <data name="Converter_Cron_FieldsHintWithSeconds" xml:space="preserve"><value>秒 分 時 日 月 曜日</value></data>
+  <data name="Converter_Cron_IncludeSeconds" xml:space="preserve"><value>秒フィールドを含む (6フィールド)</value></data>
+  <data name="Converter_Cron_FromDateTime" xml:space="preserve"><value>計算の基準日時</value></data>
+  <data name="Converter_Cron_FromDateTimePlaceholder" xml:space="preserve"><value>yyyy/MM/dd HH:mm:ss (空欄で現在時刻)</value></data>
+  <data name="Converter_Cron_OccurrenceCount" xml:space="preserve"><value>表示件数</value></data>
+  <data name="Converter_Cron_Description" xml:space="preserve"><value>説明</value></data>
+  <data name="Converter_Cron_NextOccurrences" xml:space="preserve"><value>次回実行時刻</value></data>
+  <data name="Converter_Cron_Frequency" xml:space="preserve"><value>頻度</value></data>
+  <data name="Converter_Cron_Freq_EverySecond" xml:space="preserve"><value>毎秒</value></data>
+  <data name="Converter_Cron_Freq_EveryMinute" xml:space="preserve"><value>毎分</value></data>
+  <data name="Converter_Cron_Freq_Hourly" xml:space="preserve"><value>毎時</value></data>
+  <data name="Converter_Cron_Freq_Daily" xml:space="preserve"><value>毎日</value></data>
+  <data name="Converter_Cron_Freq_Weekly" xml:space="preserve"><value>毎週</value></data>
+  <data name="Converter_Cron_Freq_Monthly" xml:space="preserve"><value>毎月</value></data>
+  <data name="Converter_Cron_Freq_Yearly" xml:space="preserve"><value>毎年</value></data>
+  <data name="Converter_Cron_Freq_Custom" xml:space="preserve"><value>カスタム</value></data>
+  <data name="Converter_Cron_Builder_Interval" xml:space="preserve"><value>間隔 (分)</value></data>
+  <data name="Converter_Cron_Builder_SecondInterval" xml:space="preserve"><value>間隔 (秒)</value></data>
+  <data name="Converter_Cron_Builder_Minute" xml:space="preserve"><value>分</value></data>
+  <data name="Converter_Cron_Builder_Time" xml:space="preserve"><value>時刻</value></data>
+  <data name="Converter_Cron_Builder_DayOfWeek" xml:space="preserve"><value>曜日</value></data>
+  <data name="Converter_Cron_Builder_DayOfMonth" xml:space="preserve"><value>日</value></data>
+  <data name="Converter_Cron_Builder_Month" xml:space="preserve"><value>月</value></data>
+  <data name="Converter_Cron_Builder_CustomHint" xml:space="preserve"><value>下のCron式欄を直接編集してください。</value></data>
+  <data name="Converter_Cron_Builder_SelectAtLeastOneDay" xml:space="preserve"><value>曜日を1つ以上選択してください。</value></data>
+  <data name="Converter_Cron_Day_Sun" xml:space="preserve"><value>日</value></data>
+  <data name="Converter_Cron_Day_Mon" xml:space="preserve"><value>月</value></data>
+  <data name="Converter_Cron_Day_Tue" xml:space="preserve"><value>火</value></data>
+  <data name="Converter_Cron_Day_Wed" xml:space="preserve"><value>水</value></data>
+  <data name="Converter_Cron_Day_Thu" xml:space="preserve"><value>木</value></data>
+  <data name="Converter_Cron_Day_Fri" xml:space="preserve"><value>金</value></data>
+  <data name="Converter_Cron_Day_Sat" xml:space="preserve"><value>土</value></data>
+  <data name="Converter_NumberBase_Decimal" xml:space="preserve"><value>10進数</value></data>
+  <data name="Converter_NumberBase_Hex" xml:space="preserve"><value>16進数</value></data>
+  <data name="Converter_NumberBase_Octal" xml:space="preserve"><value>8進数</value></data>
+  <data name="Converter_NumberBase_Binary" xml:space="preserve"><value>2進数</value></data>
+  <data name="Converter_NumberBase_InvalidFormat" xml:space="preserve"><value>この基数として無効な数値です。</value></data>
+  <data name="Converter_NumberBase_UsePrefix" xml:space="preserve"><value>基数プレフィックスを付ける (0x / 0o / 0B)</value></data>
+  <data name="Converter_Jwt_Token" xml:space="preserve"><value>トークン</value></data>
+  <data name="Converter_Jwt_TokenPlaceholder" xml:space="preserve"><value>xxxxx.yyyyy.zzzzz</value></data>
+  <data name="Converter_Jwt_InvalidFormat" xml:space="preserve"><value>無効なJWT形式です。header.payload.signature の3つの空でないパートをドットで区切った形式である必要があります。</value></data>
+  <data name="Converter_Jwt_Sample_Basic" xml:space="preserve"><value>標準</value></data>
+  <data name="Converter_Jwt_Sample_Expired" xml:space="preserve"><value>期限切れ</value></data>
+  <data name="Converter_Jwt_Sample_Roles" xml:space="preserve"><value>配列クレーム</value></data>
+  <data name="Converter_Jwt_Header" xml:space="preserve"><value>ヘッダー</value></data>
+  <data name="Converter_Jwt_Payload" xml:space="preserve"><value>ペイロード</value></data>
+  <data name="Converter_Jwt_Signature" xml:space="preserve"><value>署名</value></data>
+  <data name="Converter_Jwt_SignatureNote" xml:space="preserve"><value>そのまま表示のみ。検証には秘密鍵/公開鍵が必要なため未対応です。</value></data>
+  <data name="Converter_Jwt_ClaimDatesLabel" xml:space="preserve"><value>日時クレーム</value></data>
+  <data name="Converter_Jwt_Expired" xml:space="preserve"><value>期限切れ</value></data>
+  <data name="ErrorList_WindowTitle" xml:space="preserve"><value>エラーコード一覧</value></data>
+  <data name="ErrorList_Mode_Http" xml:space="preserve"><value>HTTPステータス</value></data>
+  <data name="ErrorList_Mode_Errno" xml:space="preserve"><value>POSIX errno.h</value></data>
+  <data name="ErrorList_Mode_WindowsError" xml:space="preserve"><value>Windowsエラー</value></data>
+  <data name="ErrorList_Mode_Smtp" xml:space="preserve"><value>SMTP応答コード</value></data>
+  <data name="ErrorList_Search" xml:space="preserve"><value>コード、マクロ名、メッセージ内容で検索...</value></data>
+  <data name="ErrorList_LanguageEn" xml:space="preserve"><value>英語</value></data>
+  <data name="ErrorList_LanguageJa" xml:space="preserve"><value>日本語</value></data>
+  <data name="ErrorList_ColumnCode" xml:space="preserve"><value>コード</value></data>
+  <data name="ErrorList_ColumnMacro" xml:space="preserve"><value>マクロ名</value></data>
+  <data name="ErrorList_ColumnDescription" xml:space="preserve"><value>説明</value></data>
+  <data name="ErrorList_NoResults" xml:space="preserve"><value>該当する項目がありません。</value></data>
+  <data name="ErrorList_CopyAsJson" xml:space="preserve"><value>JSON形式でコピー</value></data>
+</root>

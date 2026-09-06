@@ -1,0 +1,292 @@
+<UserControl x:Class="HasamiBoard.Views.ClipboardHistoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:HasamiBoard.ViewModels"
+             xmlns:converters="clr-namespace:HasamiBoard.Converters"
+             xmlns:services="clr-namespace:HasamiBoard.Services">
+
+    <UserControl.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+
+        <DataTemplate x:Key="TagBadgeTemplate" DataType="{x:Type vm:TagBadgeViewModel}">
+            <Border Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                    CornerRadius="10" Padding="7,2" Margin="0,0,4,4">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Name, StringFormat=#{0}}" Foreground="White" FontSize="11"
+                               Cursor="Hand" VerticalAlignment="Center">
+                        <TextBlock.InputBindings>
+                            <MouseBinding MouseAction="LeftClick" Command="{Binding ClickCommand}" />
+                        </TextBlock.InputBindings>
+                    </TextBlock>
+                    <Button Content="✕" Command="{Binding RemoveCommand}"
+                            Margin="4,0,0,0" Padding="0" Width="14" Height="14" FontSize="9"
+                            Background="Transparent" BorderThickness="0" Foreground="White" Cursor="Hand"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Tooltip_RemoveTag]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Tooltip_RemoveTag]}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ツールバー -->
+        <DockPanel Grid.Row="0" Margin="0,0,0,6">
+            <Button DockPanel.Dock="Right"
+                    Style="{StaticResource CardIconButtonStyle}" Content="🗑️"
+                    Foreground="{DynamicResource DangerBrush}"
+                    Command="{Binding ClearAllCommand}"
+                    ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_ClearAll]}"
+                    AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_ClearAll]}" />
+
+            <!-- 複数選択時の一括操作バー -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                        Visibility="{Binding HasSelection, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Text="{Binding SelectionCountText}"
+                           Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11"
+                           VerticalAlignment="Center" Margin="0,0,6,0" />
+                <Button Style="{StaticResource CardIconButtonStyle}" Content="📌"
+                        Command="{Binding TogglePinSelectedCommand}"
+                        ToolTip="{Binding BulkPinButtonLabel}"
+                        AutomationProperties.Name="{Binding BulkPinButtonLabel}" />
+                <Button Style="{StaticResource CardIconButtonStyle}" Content="📋"
+                        Foreground="{DynamicResource CopyIconBrush}"
+                        Command="{Binding CopySelectedToClipboardCommand}"
+                        ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                        AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                <Button x:Name="BulkTagButton"
+                        Style="{StaticResource CardIconButtonStyle}" Content="🏷️+"
+                        Foreground="{DynamicResource TagIconBrush}"
+                        Command="{Binding OpenBulkTagPickerCommand}"
+                        ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Selection_AddTag]}"
+                        AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Selection_AddTag]}" />
+                <Popup x:Name="BulkTagPickerPopup" IsOpen="{Binding IsBulkTagPickerOpen}" StaysOpen="False"
+                       PlacementTarget="{Binding ElementName=BulkTagButton}"
+                       Placement="Bottom" AllowsTransparency="True" PopupAnimation="Fade">
+                    <Border Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource CardBorderBrush}"
+                            BorderThickness="1" CornerRadius="6" Padding="8" MinWidth="140">
+                        <ItemsControl ItemsSource="{Binding MasterTags}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding Name}"
+                                            HorizontalContentAlignment="Left"
+                                            Background="Transparent" BorderThickness="0"
+                                            Padding="4,3" Cursor="Hand"
+                                            Foreground="{DynamicResource PrimaryTextBrush}"
+                                            Command="{Binding PlacementTarget.DataContext.AddTagToSelectedCommand, RelativeSource={RelativeSource AncestorType=Popup}}"
+                                            CommandParameter="{Binding Name}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </Popup>
+                <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️"
+                        Foreground="{DynamicResource DangerBrush}"
+                        Command="{Binding DeleteSelectedCommand}"
+                        ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Delete]}"
+                        AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Delete]}" />
+            </StackPanel>
+        </DockPanel>
+
+        <!-- 空状態メッセージ -->
+        <TextBlock Grid.Row="1"
+                   Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[History_Empty]}"
+                   Foreground="{DynamicResource SecondaryTextBrush}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   TextWrapping="Wrap" TextAlignment="Center" MaxWidth="260"
+                   Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+        <!-- 履歴一覧 -->
+        <ListBox x:Name="HistoryListBox"
+                 Grid.Row="1"
+                 ItemsSource="{Binding Items}"
+                 SelectedItem="{Binding SelectedItem}"
+                 SelectionMode="Extended"
+                 SelectionChanged="HistoryListBox_SelectionChanged"
+                 PreviewKeyDown="HistoryListBox_PreviewKeyDown"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 VirtualizingPanel.IsVirtualizing="True"
+                 VirtualizingPanel.VirtualizationMode="Recycling"
+                 VirtualizingPanel.CacheLengthUnit="Pixel"
+                 VirtualizingPanel.CacheLength="200,200"
+                 VirtualizingPanel.ScrollUnit="Pixel"
+                 Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="Focusable" Value="True" />
+                    <EventSetter Event="MouseDoubleClick" Handler="ListBoxItem_MouseDoubleClick" />
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu>
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Edit]}"
+                                          Command="{Binding BeginEditCommand}" />
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Pin]}"
+                                          Command="{Binding TogglePinCommand}" />
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                                          Command="{Binding CopyToClipboardCommand}" />
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[ContextMenu_CreateMemo]}"
+                                          Command="{Binding CreateMemoCommand}"
+                                          IsEnabled="{Binding DataContext.IsMemoFeatureEnabled, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+                                <Separator />
+                                <MenuItem Header="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Delete]}"
+                                          Command="{Binding DeleteCommand}" />
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <ContentPresenter />
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListBox.ItemContainerStyle>
+
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type vm:ClipboardHistoryItemViewModel}">
+                    <Border BorderThickness="1"
+                            CornerRadius="8" Margin="0,0,0,6" Padding="10">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsFlashing}" Value="True">
+                                        <Setter Property="Background" Value="{DynamicResource FlashBrush}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
+                                        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel>
+                            <!-- タグ行 -->
+                            <WrapPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                <ItemsControl ItemsSource="{Binding Tags}" ItemTemplate="{StaticResource TagBadgeTemplate}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+
+                                <Button x:Name="AddTagButton"
+                                        Content="🏷️+"
+                                        Style="{StaticResource CardIconButtonStyle}"
+                                        Foreground="{DynamicResource TagIconBrush}"
+                                        Width="Auto" Height="22" Padding="6,0" FontSize="11"
+                                        Command="{Binding OpenTagPickerCommand}"
+                                        ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Tooltip_AddTag]}"
+                                        AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Tooltip_AddTag]}" />
+
+                                <Popup IsOpen="{Binding IsTagPickerOpen}" StaysOpen="False"
+                                       PlacementTarget="{Binding ElementName=AddTagButton}"
+                                       Placement="Bottom" AllowsTransparency="True" PopupAnimation="Fade">
+                                    <Border Background="{DynamicResource CardBackgroundBrush}"
+                                            BorderBrush="{DynamicResource CardBorderBrush}"
+                                            BorderThickness="1" CornerRadius="6" Padding="8" MinWidth="140">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[History_AddTag]}"
+                                                       FontWeight="Bold" FontSize="11" Margin="0,0,0,6"
+                                                       Foreground="{DynamicResource PrimaryTextBrush}" />
+                                            <ItemsControl ItemsSource="{Binding AvailableTagsToAdd}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Button Content="{Binding Name}"
+                                                                HorizontalContentAlignment="Left"
+                                                                Background="Transparent" BorderThickness="0"
+                                                                Padding="4,3" Cursor="Hand"
+                                                                Foreground="{DynamicResource PrimaryTextBrush}"
+                                                                Command="{Binding PlacementTarget.DataContext.AddTagCommand, RelativeSource={RelativeSource AncestorType=Popup}}"
+                                                                CommandParameter="{Binding Name}" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[History_NoMoreTags]}"
+                                                       FontSize="11" TextWrapping="Wrap" MaxWidth="150"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       Visibility="{Binding HasNoAvailableTags, Converter={StaticResource BoolToVisibilityConverter}}" />
+                                        </StackPanel>
+                                    </Border>
+                                </Popup>
+                            </WrapPanel>
+
+                            <!-- 本文 / インライン編集 -->
+                            <Grid>
+                                <TextBlock Text="{Binding Text}"
+                                           TextWrapping="Wrap"
+                                           MaxHeight="{Binding DataContext.ItemMaxHeight, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                           TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource PrimaryTextBrush}"
+                                           FontFamily="{Binding DataContext.HistoryFontFamily, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                           FontSize="{Binding DataContext.HistoryFontSize, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                           Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}" />
+                                <TextBox x:Name="EditTextBox"
+                                         Text="{Binding EditingText, UpdateSourceTrigger=PropertyChanged}"
+                                         TextWrapping="Wrap"
+                                         MaxHeight="140"
+                                         Background="{DynamicResource InputBackgroundBrush}"
+                                         Foreground="{DynamicResource PrimaryTextBrush}"
+                                         BorderBrush="{DynamicResource AccentBrush}"
+                                         BorderThickness="1" Padding="4"
+                                         PreviewKeyDown="EditTextBox_PreviewKeyDown"
+                                         Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            </Grid>
+
+                            <!-- フッター: 日時 + 操作ボタン -->
+                            <Grid Margin="0,6,0,0">
+                                <TextBlock Text="{Binding CreatedAt, StringFormat={}{0:yyyy/MM/dd HH:mm:ss}}"
+                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                           FontSize="10" VerticalAlignment="Center" />
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <ToggleButton Style="{StaticResource PinToggleButtonStyle}"
+                                                  Width="26" Height="26"
+                                                  IsChecked="{Binding IsPinned, Mode=OneWay}"
+                                                  Command="{Binding TogglePinCommand}"
+                                                  ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Pin]}"
+                                                  AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Pin]}" />
+                                    <Button Style="{StaticResource CardIconButtonStyle}" Content="✏️"
+                                            Foreground="{DynamicResource EditIconBrush}"
+                                            Command="{Binding BeginEditCommand}"
+                                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Edit]}"
+                                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Edit]}" />
+                                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋"
+                                            Foreground="{DynamicResource CopyIconBrush}"
+                                            Command="{Binding CopyToClipboardCommand}"
+                                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📝"
+                                            Foreground="{DynamicResource MemoIconBrush}"
+                                            Command="{Binding CreateMemoCommand}"
+                                            IsEnabled="{Binding DataContext.IsMemoFeatureEnabled, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[ContextMenu_CreateMemo]}"
+                                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[ContextMenu_CreateMemo]}" />
+                                    <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️"
+                                            Foreground="{DynamicResource DangerBrush}"
+                                            Command="{Binding DeleteCommand}"
+                                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Delete]}"
+                                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Delete]}" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

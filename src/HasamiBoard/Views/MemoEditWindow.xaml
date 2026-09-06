@@ -1,0 +1,252 @@
+<Window x:Class="HasamiBoard.Views.MemoEditWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:HasamiBoard.ViewModels"
+        xmlns:converters="clr-namespace:HasamiBoard.Converters"
+        xmlns:services="clr-namespace:HasamiBoard.Services"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="{Binding WindowTitle}"
+        Width="720" Height="600" MinWidth="480" MinHeight="360"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBackgroundBrush}">
+
+    <Window.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:HexToBrushConverter x:Key="HexToBrushConverter" />
+
+        <DataTemplate x:Key="TagBadgeTemplate" DataType="{x:Type vm:TagBadgeViewModel}">
+            <Border Background="{Binding ColorHex, Converter={StaticResource HexToBrushConverter}}"
+                    CornerRadius="10" Padding="7,2" Margin="0,0,4,4">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Name, StringFormat=#{0}}" Foreground="White" FontSize="11" VerticalAlignment="Center" />
+                    <Button Content="✕" Command="{Binding RemoveCommand}"
+                            Margin="4,0,0,0" Padding="0" Width="14" Height="14" FontSize="9"
+                            Background="Transparent" BorderThickness="0" Foreground="White" Cursor="Hand"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Tooltip_RemoveTag]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Tooltip_RemoveTag]}" />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- タイトル -->
+        <TextBox Grid.Row="0" Style="{StaticResource StandardTextBoxStyle}"
+                 Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                 FontSize="16" Margin="0,0,0,8"
+                 Tag="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Memo_TitlePlaceholder]}" />
+
+        <!-- モード切替 + タグ -->
+        <Grid Grid.Row="1" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" Grid.Column="0" Margin="0,0,16,0">
+                <RadioButton Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Memo_Mode_Text]}"
+                             GroupName="MemoMode" IsChecked="{Binding IsTextMode, Mode=OneWay}"
+                             Checked="TextModeRadio_Checked" Margin="0,0,10,0"
+                             Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center" />
+                <RadioButton Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Memo_Mode_Markdown]}"
+                             GroupName="MemoMode" IsChecked="{Binding IsMarkdownMode, Mode=OneWay}"
+                             Checked="MarkdownModeRadio_Checked" Margin="0,0,16,0"
+                             Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center" />
+
+                <Button x:Name="FontSettingsButton" Content="🔤"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Padding="6,2" FontSize="12"
+                        Click="FontSettingsButton_Click"
+                        ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[MemoFontPanel_Title]}"
+                        AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[MemoFontPanel_Title]}" />
+
+                <Popup x:Name="FontSettingsPopup" StaysOpen="False"
+                       PlacementTarget="{Binding ElementName=FontSettingsButton}"
+                       Placement="Bottom" AllowsTransparency="True" PopupAnimation="Fade">
+                    <Border Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource CardBorderBrush}"
+                            BorderThickness="1" CornerRadius="6" Padding="10" MinWidth="230">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[MemoFontPanel_Title]}"
+                                       FontWeight="Bold" FontSize="11" Margin="0,0,0,6"
+                                       Foreground="{DynamicResource PrimaryTextBrush}" />
+
+                            <StackPanel Visibility="{Binding IsTextMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[MemoFontPanel_Text]}"
+                                           FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,4,0,2" />
+                                <StackPanel Orientation="Horizontal">
+                                    <ComboBox Width="130" Margin="0,0,6,0" IsEditable="True"
+                                              ItemsSource="{Binding AvailableFontFamilies}"
+                                              Text="{Binding TextFontFamily, Mode=TwoWay}" />
+                                    <ComboBox Width="55" IsEditable="True"
+                                              Text="{Binding TextFontSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                        <ComboBoxItem>11</ComboBoxItem>
+                                        <ComboBoxItem>12</ComboBoxItem>
+                                        <ComboBoxItem>13</ComboBoxItem>
+                                        <ComboBoxItem>14</ComboBoxItem>
+                                        <ComboBoxItem>16</ComboBoxItem>
+                                        <ComboBoxItem>18</ComboBoxItem>
+                                    </ComboBox>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Visibility="{Binding IsMarkdownMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[MemoFontPanel_MarkdownEdit]}"
+                                           FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,4,0,2" />
+                                <StackPanel Orientation="Horizontal">
+                                    <ComboBox Width="130" Margin="0,0,6,0" IsEditable="True"
+                                              ItemsSource="{Binding AvailableFontFamilies}"
+                                              Text="{Binding MarkdownEditFontFamily, Mode=TwoWay}" />
+                                    <ComboBox Width="55" IsEditable="True"
+                                              Text="{Binding MarkdownEditFontSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                        <ComboBoxItem>11</ComboBoxItem>
+                                        <ComboBoxItem>12</ComboBoxItem>
+                                        <ComboBoxItem>13</ComboBoxItem>
+                                        <ComboBoxItem>14</ComboBoxItem>
+                                        <ComboBoxItem>16</ComboBoxItem>
+                                        <ComboBoxItem>18</ComboBoxItem>
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[MemoFontPanel_MarkdownView]}"
+                                           FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,8,0,2" />
+                                <StackPanel Orientation="Horizontal">
+                                    <ComboBox Width="130" Margin="0,0,6,0" IsEditable="True"
+                                              ItemsSource="{Binding AvailableFontFamilies}"
+                                              Text="{Binding MarkdownViewFontFamily, Mode=TwoWay}" />
+                                    <ComboBox Width="55" IsEditable="True"
+                                              Text="{Binding MarkdownViewFontSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                        <ComboBoxItem>12</ComboBoxItem>
+                                        <ComboBoxItem>13</ComboBoxItem>
+                                        <ComboBoxItem>14</ComboBoxItem>
+                                        <ComboBoxItem>15</ComboBoxItem>
+                                        <ComboBoxItem>16</ComboBoxItem>
+                                        <ComboBoxItem>18</ComboBoxItem>
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[MemoFontPanel_MarkdownCode]}"
+                                           FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,8,0,2" />
+                                <StackPanel Orientation="Horizontal">
+                                    <ComboBox Width="130" Margin="0,0,6,0" IsEditable="True"
+                                              ItemsSource="{Binding AvailableFontFamilies}"
+                                              Text="{Binding MarkdownCodeFontFamily, Mode=TwoWay}" />
+                                    <ComboBox Width="55" IsEditable="True"
+                                              Text="{Binding MarkdownCodeFontSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                        <ComboBoxItem>11</ComboBoxItem>
+                                        <ComboBoxItem>12</ComboBoxItem>
+                                        <ComboBoxItem>13</ComboBoxItem>
+                                        <ComboBoxItem>14</ComboBoxItem>
+                                        <ComboBoxItem>16</ComboBoxItem>
+                                        <ComboBoxItem>18</ComboBoxItem>
+                                    </ComboBox>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Popup>
+            </StackPanel>
+
+            <WrapPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <ItemsControl ItemsSource="{Binding Tags}" ItemTemplate="{StaticResource TagBadgeTemplate}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+
+                <Button x:Name="AddTagButton" Content="🏷️+"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Foreground="{DynamicResource TagIconBrush}"
+                        Padding="6,2" FontSize="11"
+                        Click="AddTagButton_Click"
+                        ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Tooltip_AddTag]}"
+                        AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Tooltip_AddTag]}" />
+
+                <Popup x:Name="TagPickerPopup" StaysOpen="False"
+                       PlacementTarget="{Binding ElementName=AddTagButton}"
+                       Placement="Bottom" AllowsTransparency="True" PopupAnimation="Fade">
+                    <Border Background="{DynamicResource CardBackgroundBrush}"
+                            BorderBrush="{DynamicResource CardBorderBrush}"
+                            BorderThickness="1" CornerRadius="6" Padding="8" MinWidth="140">
+                        <ItemsControl ItemsSource="{Binding AvailableTagsToAdd}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Content="{Binding Name}"
+                                            HorizontalContentAlignment="Left"
+                                            Background="Transparent" BorderThickness="0"
+                                            Padding="4,3" Cursor="Hand"
+                                            Foreground="{DynamicResource PrimaryTextBrush}"
+                                            Click="TagOption_Click"
+                                            Tag="{Binding Name}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </Popup>
+            </WrapPanel>
+        </Grid>
+
+        <!-- 本文エリア -->
+        <Grid Grid.Row="3">
+            <!-- テキストモード -->
+            <TextBox x:Name="PlainTextEditor"
+                     Style="{StaticResource StandardTextBoxStyle}"
+                     Text="{Binding Body, UpdateSourceTrigger=PropertyChanged}"
+                     AcceptsReturn="True" TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     FontFamily="{Binding TextFontFamily}"
+                     FontSize="{Binding TextFontSize}"
+                     PreviewMouseWheel="PlainTextEditor_PreviewMouseWheel"
+                     Visibility="{Binding IsMarkdownMode, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}" />
+
+            <!-- Markdownモード (左エディタ / 右プレビュー) -->
+            <Grid Visibility="{Binding IsMarkdownMode, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="6" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="MarkdownEditor" Grid.Column="0"
+                         Style="{StaticResource StandardTextBoxStyle}"
+                         Text="{Binding Body, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True" TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"
+                         FontFamily="{Binding MarkdownEditFontFamily}"
+                         FontSize="{Binding MarkdownEditFontSize}"
+                         TextChanged="MarkdownEditor_TextChanged"
+                         PreviewMouseWheel="MarkdownEditor_PreviewMouseWheel"
+                         PreviewKeyDown="MarkdownEditor_PreviewKeyDown" />
+
+                <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Stretch"
+                              Background="{DynamicResource SeparatorBrush}" />
+
+                <Border Grid.Column="2" Background="{DynamicResource CardBackgroundBrush}"
+                        BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1">
+                    <wv2:WebView2 x:Name="MarkdownPreview"
+                                  PreviewMouseWheel="MarkdownPreview_PreviewMouseWheel" />
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- ボタン -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Style="{StaticResource SecondaryButtonStyle}"
+                    Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Cancel]}"
+                    Click="CancelButton_Click" Margin="0,0,8,0" />
+            <Button Style="{StaticResource StandardButtonStyle}"
+                    Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Save]}"
+                    Click="SaveButton_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

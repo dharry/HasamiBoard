@@ -1,0 +1,1823 @@
+<Window x:Class="HasamiBoard.Views.ConverterWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:services="clr-namespace:HasamiBoard.Services"
+        xmlns:converters="clr-namespace:HasamiBoard.Converters"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_WindowTitle]}"
+        Width="640" Height="580" MinWidth="540" MinHeight="460"
+        WindowStartupLocation="CenterOwner"
+        Topmost="{Binding IsTopmost}"
+        FontFamily="{Binding UiFontFamily}"
+        FontSize="{Binding UiFontSize}"
+        Background="{DynamicResource WindowBackgroundBrush}"
+        PreviewKeyDown="ConverterWindow_PreviewKeyDown">
+
+    <Window.Resources>
+        <converters:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter" />
+        <converters:EnumToBoolConverter x:Key="EnumToBoolConverter" />
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+        <HierarchicalDataTemplate x:Key="JqPathNodeTemplate" DataType="{x:Type services:JqPathNode}" ItemsSource="{Binding Children}">
+            <TextBlock Text="{Binding Label}" FontFamily="Consolas" FontSize="11" Foreground="{DynamicResource PrimaryTextBrush}" />
+        </HierarchicalDataTemplate>
+
+        <Style x:Key="SidebarModeButtonStyle" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" BorderThickness="3,0,0,0" BorderBrush="Transparent"
+                                Background="Transparent" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SidebarCategoryExpanderStyle" TargetType="Expander">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Expander">
+                        <DockPanel>
+                            <ToggleButton DockPanel.Dock="Top" Cursor="Hand" Focusable="False"
+                                          IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                          Content="{TemplateBinding Header}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="HeaderBd" Background="Transparent" Padding="10,8">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock x:Name="Arrow" Text="&#9654;" FontSize="10" Margin="0,0,8,0" VerticalAlignment="Center"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}" />
+                                                <ContentPresenter VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="HeaderBd" Property="Background" Value="{DynamicResource HoverBrush}" />
+                                            </Trigger>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="Arrow" Property="Text" Value="&#9660;" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter x:Name="ContentHost" DockPanel.Dock="Bottom" Visibility="Collapsed" />
+                        </DockPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsExpanded" Value="True">
+                                <Setter TargetName="ContentHost" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ConverterLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+
+        <Style x:Key="ConverterInputTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource StandardTextBoxStyle}">
+            <Setter Property="AcceptsReturn" Value="True" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="FontFamily" Value="{Binding EditFontFamily}" />
+            <Setter Property="FontSize" Value="{Binding EditFontSize}" />
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="150" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- ヘッダー: フォント設定 / 常に手前に表示トグル -->
+        <DockPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="6,4" LastChildFill="False">
+            <ToggleButton DockPanel.Dock="Right"
+                          Style="{StaticResource PinToggleButtonStyle}"
+                          IsChecked="{Binding IsTopmost, Mode=OneWay}"
+                          Command="{Binding ToggleTopmostCommand}"
+                          ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Header_Pin]}"
+                          AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Header_Pin]}" />
+
+            <Button x:Name="FontSettingsButton" DockPanel.Dock="Right" Content="🔤"
+                    Style="{StaticResource IconButtonStyle}"
+                    Click="FontSettingsButton_Click"
+                    ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[MemoFontPanel_Title]}"
+                    AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[MemoFontPanel_Title]}" />
+
+            <Popup x:Name="FontSettingsPopup" StaysOpen="False"
+                   PlacementTarget="{Binding ElementName=FontSettingsButton}"
+                   Placement="Bottom" AllowsTransparency="True" PopupAnimation="Fade">
+                <Border Background="{DynamicResource CardBackgroundBrush}"
+                        BorderBrush="{DynamicResource CardBorderBrush}"
+                        BorderThickness="1" CornerRadius="6" Padding="10" MinWidth="260">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[MemoFontPanel_Title]}"
+                                   FontWeight="Bold" FontSize="11" Margin="0,0,0,6"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" />
+
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Settings_Font_ConverterUi]}"
+                                   FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,4,0,2" />
+                        <StackPanel Orientation="Horizontal">
+                            <ComboBox Width="150" Margin="0,0,6,0" IsEditable="True"
+                                      ItemsSource="{Binding AvailableFontFamilies}"
+                                      Text="{Binding UiFontFamily, Mode=TwoWay}" />
+                            <ComboBox Width="55" IsEditable="True"
+                                      Text="{Binding UiFontSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBoxItem>11</ComboBoxItem>
+                                <ComboBoxItem>12</ComboBoxItem>
+                                <ComboBoxItem>13</ComboBoxItem>
+                                <ComboBoxItem>14</ComboBoxItem>
+                                <ComboBoxItem>16</ComboBoxItem>
+                                <ComboBoxItem>18</ComboBoxItem>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Settings_Font_ConverterEdit]}"
+                                   FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,8,0,2" />
+                        <StackPanel Orientation="Horizontal">
+                            <ComboBox Width="150" Margin="0,0,6,0" IsEditable="True"
+                                      ItemsSource="{Binding AvailableFontFamilies}"
+                                      Text="{Binding EditFontFamily, Mode=TwoWay}" />
+                            <ComboBox Width="55" IsEditable="True"
+                                      Text="{Binding EditFontSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+                                <ComboBoxItem>11</ComboBoxItem>
+                                <ComboBoxItem>12</ComboBoxItem>
+                                <ComboBoxItem>13</ComboBoxItem>
+                                <ComboBoxItem>14</ComboBoxItem>
+                                <ComboBoxItem>16</ComboBoxItem>
+                                <ComboBoxItem>18</ComboBoxItem>
+                            </ComboBox>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Popup>
+        </DockPanel>
+
+        <!-- サイドバー: 変換モード一覧 (カテゴリ別の折りたたみ表示) -->
+        <Border Grid.Row="1" Grid.Column="0" Background="{DynamicResource CardBackgroundBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="0,0,1,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel x:Name="ModeSidebarPanel" Margin="0,8">
+                    <Expander x:Name="CategoryEncodeDecodeExpander" Style="{StaticResource SidebarCategoryExpanderStyle}" Tag="EncodeDecode"
+                              Expanded="CategoryExpander_Toggled" Collapsed="CategoryExpander_Toggled">
+                        <Expander.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🔤" Margin="0,0,6,0" />
+                                <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[ConverterCategory_EncodeDecode]}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            </StackPanel>
+                        </Expander.Header>
+                        <StackPanel Margin="16,0,0,4">
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_Hash]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Hash, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="Hash" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_Base64]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Base64, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="Base64" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_Url]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Url, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="Url" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_Html]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Html, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="Html" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_JwtDecoder]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=JwtDecoder, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="JwtDecoder" />
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander x:Name="CategoryFormatterExpander" Style="{StaticResource SidebarCategoryExpanderStyle}" Tag="Formatter"
+                              Expanded="CategoryExpander_Toggled" Collapsed="CategoryExpander_Toggled">
+                        <Expander.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🎨" Margin="0,0,6,0" />
+                                <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[ConverterCategory_Formatter]}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            </StackPanel>
+                        </Expander.Header>
+                        <StackPanel Margin="16,0,0,4">
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_Json]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Json, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="Json" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_Xml]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Xml, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="Xml" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_HtmlFormat]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=HtmlFormat, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="HtmlFormat" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_Css]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Css, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="Css" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_JavaScript]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=JavaScript, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="JavaScript" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_Sql]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Sql, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="Sql" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_Jq]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Jq, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="Jq" />
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander x:Name="CategoryDateTimeExpander" Style="{StaticResource SidebarCategoryExpanderStyle}" Tag="DateTime"
+                              Expanded="CategoryExpander_Toggled" Collapsed="CategoryExpander_Toggled">
+                        <Expander.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🕒" Margin="0,0,6,0" />
+                                <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[ConverterCategory_DateTime]}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            </StackPanel>
+                        </Expander.Header>
+                        <StackPanel Margin="16,0,0,4">
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_Timestamp]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Timestamp, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="Timestamp" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_CronParser]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=CronParser, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="CronParser" />
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander x:Name="CategoryGeneratorExpander" Style="{StaticResource SidebarCategoryExpanderStyle}" Tag="Generator"
+                              Expanded="CategoryExpander_Toggled" Collapsed="CategoryExpander_Toggled">
+                        <Expander.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🔑" Margin="0,0,6,0" />
+                                <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[ConverterCategory_Generator]}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            </StackPanel>
+                        </Expander.Header>
+                        <StackPanel Margin="16,0,0,4">
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_Uuid]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Uuid, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="Uuid" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_Password]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Password, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="Password" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_QrCode]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=QrCode, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="QrCode" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_BasicAuth]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=BasicAuth, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="BasicAuth" />
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander x:Name="CategoryTextAnalysisExpander" Style="{StaticResource SidebarCategoryExpanderStyle}" Tag="TextAnalysis"
+                              Expanded="CategoryExpander_Toggled" Collapsed="CategoryExpander_Toggled">
+                        <Expander.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🔍" Margin="0,0,6,0" />
+                                <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[ConverterCategory_TextAnalysis]}" FontWeight="SemiBold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            </StackPanel>
+                        </Expander.Header>
+                        <StackPanel Margin="16,0,0,4">
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_RegexTester]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=RegexTester, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="RegexTester" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_CaseConverter]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=CaseConverter, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="CaseConverter" />
+                            <RadioButton GroupName="ConverterModes" Style="{StaticResource SidebarModeButtonStyle}"
+                                         Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Mode_NumberBaseConverter]}"
+                                         IsChecked="{Binding SelectedMode, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=NumberBaseConverter, Mode=OneWay}"
+                                         Command="{Binding SelectModeCommand}" CommandParameter="NumberBaseConverter" />
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- コンテンツ -->
+        <Grid Grid.Row="1" Grid.Column="1" Margin="16">
+
+            <!-- ハッシュ生成 -->
+            <StackPanel Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Hash}">
+                <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Input]}" />
+                <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" Height="110" Margin="0,0,0,12"
+                         Text="{Binding HashInputText, UpdateSourceTrigger=PropertyChanged}" />
+
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="MD5" VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" IsReadOnly="True" Margin="6,0" Text="{Binding Md5Result, Mode=OneWay}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding Md5Result}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="SHA1" VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" IsReadOnly="True" Margin="6,0" Text="{Binding Sha1Result, Mode=OneWay}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding Sha1Result}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="SHA256" VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" IsReadOnly="True" Margin="6,0" Text="{Binding Sha256Result, Mode=OneWay}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding Sha256Result}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="SHA512" VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" IsReadOnly="True" Margin="6,0" Text="{Binding Sha512Result, Mode=OneWay}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding Sha512Result}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+            </StackPanel>
+
+            <!-- Base64 / URL / HTML エンコード・デコード -->
+            <Grid Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter='Base64,Url,Html'}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Input]}" />
+                <TextBox Grid.Row="1" Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="80" Margin="0,0,0,8"
+                         Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Style="{StaticResource StandardButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Encode]}"
+                            Command="{Binding EncodeCommand}" />
+                    <Button Style="{StaticResource SecondaryButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Decode]}"
+                            Command="{Binding DecodeCommand}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="⇄"
+                            Command="{Binding SwapCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                            Command="{Binding ClearCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                </StackPanel>
+                <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11"
+                           TextWrapping="Wrap" Margin="0,0,0,6"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                <TextBlock Grid.Row="4" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Output]}" />
+                <Grid Grid.Row="5">
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="80" IsReadOnly="True" Padding="8,5,34,5"
+                             Text="{Binding OutputText, Mode=OneWay}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding OutputText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+            </Grid>
+
+            <!-- JWT -->
+            <ScrollViewer Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=JwtDecoder}"
+                          VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <Grid Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jwt_Token]}" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,0"
+                                    Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jwt_Sample_Basic]}"
+                                    Command="{Binding InsertJwtSampleCommand}" CommandParameter="Basic" />
+                            <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,0"
+                                    Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jwt_Sample_Expired]}"
+                                    Command="{Binding InsertJwtSampleCommand}" CommandParameter="Expired" />
+                            <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3"
+                                    Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jwt_Sample_Roles]}"
+                                    Command="{Binding InsertJwtSampleCommand}" CommandParameter="Roles" />
+                        </StackPanel>
+                    </Grid>
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="70" Margin="0,0,6,0"
+                                 FontFamily="Consolas" Text="{Binding JwtTokenText, UpdateSourceTrigger=PropertyChanged}"
+                                 Tag="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jwt_TokenPlaceholder]}" />
+                        <Button Grid.Column="1" Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                                Command="{Binding ClearJwtCommand}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                    </Grid>
+                    <TextBlock Text="{Binding JwtErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11"
+                               TextWrapping="Wrap" Margin="0,0,0,8"
+                               Visibility="{Binding JwtErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jwt_Header]}" />
+                    <Grid Margin="0,0,0,8">
+                        <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="80" IsReadOnly="True" Padding="8,5,34,5"
+                                 FontFamily="Consolas" Text="{Binding JwtHeaderJson, Mode=OneWay}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0"
+                                Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding JwtHeaderJson}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                    </Grid>
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jwt_Payload]}" />
+                    <Grid Margin="0,0,0,8">
+                        <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="120" IsReadOnly="True" Padding="8,5,34,5"
+                                 FontFamily="Consolas" Text="{Binding JwtPayloadJson, Mode=OneWay}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0"
+                                Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding JwtPayloadJson}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                    </Grid>
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jwt_ClaimDatesLabel]}" />
+                    <ItemsControl ItemsSource="{Binding JwtClaimDates}" Margin="0,0,0,8">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource CardBackgroundBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,0,0,4">
+                                    <TextBlock FontFamily="Consolas" FontSize="11" TextWrapping="Wrap">
+                                        <Run Text="{Binding ClaimName, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+                                        <Run Text="  " />
+                                        <Run Text="{Binding LocalDateTime, Mode=OneWay}" />
+                                        <Run Text="  (" />
+                                        <Run Text="{Binding UtcIso8601, Mode=OneWay}" />
+                                        <Run Text=")" />
+                                        <Run Text="{Binding ExpiredLabel, Mode=OneWay, StringFormat='  {0}'}"
+                                             FontWeight="Bold" Foreground="{DynamicResource DangerBrush}" />
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jwt_Signature]}" />
+                    <Grid Margin="0,0,0,4">
+                        <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" IsReadOnly="True" Padding="8,5,34,5"
+                                 FontFamily="Consolas" Text="{Binding JwtSignatureText, Mode=OneWay}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0"
+                                Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding JwtSignatureText}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                    </Grid>
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jwt_SignatureNote]}"
+                               FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- JSON整形/圧縮 -->
+            <Grid Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Json}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Input]}" />
+                <TextBox Grid.Row="1" Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="80" Margin="0,0,0,8"
+                         Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Style="{StaticResource StandardButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Format]}"
+                            Command="{Binding FormatJsonCommand}" />
+                    <Button Style="{StaticResource SecondaryButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Minify]}"
+                            Command="{Binding MinifyJsonCommand}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="⇄"
+                            Command="{Binding SwapCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                            Command="{Binding ClearCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                </StackPanel>
+                <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11"
+                           TextWrapping="Wrap" Margin="0,0,0,6"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                <TextBlock Grid.Row="4" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Output]}" />
+                <Grid Grid.Row="5">
+                    <Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1" CornerRadius="6">
+                        <wv2:WebView2 x:Name="JsonOutputView" />
+                    </Border>
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding OutputText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+            </Grid>
+
+            <!-- XMLフォーマット -->
+            <Grid Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Xml}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Input]}" />
+                <TextBox Grid.Row="1" Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="80" Margin="0,0,0,8"
+                         Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Style="{StaticResource StandardButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Format]}"
+                            Command="{Binding FormatXmlCommand}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="⇄"
+                            Command="{Binding SwapCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                            Command="{Binding ClearCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                </StackPanel>
+                <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11"
+                           TextWrapping="Wrap" Margin="0,0,0,6"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                <TextBlock Grid.Row="4" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Output]}" />
+                <Grid Grid.Row="5">
+                    <Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1" CornerRadius="6">
+                        <wv2:WebView2 x:Name="XmlOutputView" />
+                    </Border>
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding OutputText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+            </Grid>
+
+            <!-- HTMLフォーマット -->
+            <Grid Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=HtmlFormat}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Input]}" />
+                <TextBox Grid.Row="1" Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="80" Margin="0,0,0,8"
+                         Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Style="{StaticResource StandardButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Format]}"
+                            Command="{Binding FormatHtmlCommand}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="⇄"
+                            Command="{Binding SwapCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                            Command="{Binding ClearCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                </StackPanel>
+                <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11"
+                           TextWrapping="Wrap" Margin="0,0,0,6"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                <TextBlock Grid.Row="4" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Output]}" />
+                <Grid Grid.Row="5">
+                    <Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1" CornerRadius="6">
+                        <wv2:WebView2 x:Name="HtmlFormatOutputView" />
+                    </Border>
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding OutputText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+            </Grid>
+
+            <!-- CSSフォーマット -->
+            <Grid Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Css}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Input]}" />
+                <TextBox Grid.Row="1" Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="80" Margin="0,0,0,8"
+                         Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Style="{StaticResource StandardButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Format]}"
+                            Command="{Binding FormatCssCommand}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="⇄"
+                            Command="{Binding SwapCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                            Command="{Binding ClearCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                </StackPanel>
+                <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11"
+                           TextWrapping="Wrap" Margin="0,0,0,6"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                <TextBlock Grid.Row="4" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Output]}" />
+                <Grid Grid.Row="5">
+                    <Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1" CornerRadius="6">
+                        <wv2:WebView2 x:Name="CssOutputView" />
+                    </Border>
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding OutputText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+            </Grid>
+
+            <!-- JavaScriptフォーマット -->
+            <Grid Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=JavaScript}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Input]}" />
+                <TextBox Grid.Row="1" Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="80" Margin="0,0,0,8"
+                         Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" />
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Style="{StaticResource StandardButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Format]}"
+                            Command="{Binding FormatJavaScriptCommand}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="⇄"
+                            Command="{Binding SwapCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                            Command="{Binding ClearCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                </StackPanel>
+                <TextBlock Grid.Row="3" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11"
+                           TextWrapping="Wrap" Margin="0,0,0,6"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                <TextBlock Grid.Row="4" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Output]}" />
+                <Grid Grid.Row="5">
+                    <Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1" CornerRadius="6">
+                        <wv2:WebView2 x:Name="JavaScriptOutputView" />
+                    </Border>
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding OutputText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+            </Grid>
+
+            <!-- SQLフォーマット -->
+            <Grid Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Sql}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Input]}" />
+                <TextBox Grid.Row="1" Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="80" Margin="0,0,0,8"
+                         Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" />
+
+                <!-- フォーマットオプション -->
+                <StackPanel Grid.Row="2" Margin="0,0,0,8">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Sql_KeywordCasing]}"
+                                   Width="120" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" />
+                        <RadioButton GroupName="SqlKeywordCasing" Margin="0,0,14,0" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Sql_CasingUppercase]}"
+                                     IsChecked="{Binding SqlKeywordCasing, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Uppercase, Mode=OneWay}"
+                                     Command="{Binding SelectSqlKeywordCasingCommand}" CommandParameter="Uppercase" />
+                        <RadioButton GroupName="SqlKeywordCasing" Margin="0,0,14,0" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Sql_CasingLowercase]}"
+                                     IsChecked="{Binding SqlKeywordCasing, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Lowercase, Mode=OneWay}"
+                                     Command="{Binding SelectSqlKeywordCasingCommand}" CommandParameter="Lowercase" />
+                        <RadioButton GroupName="SqlKeywordCasing" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Sql_CasingPascalCase]}"
+                                     IsChecked="{Binding SqlKeywordCasing, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=PascalCase, Mode=OneWay}"
+                                     Command="{Binding SelectSqlKeywordCasingCommand}" CommandParameter="PascalCase" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Sql_CommaPlacement]}"
+                                   Width="120" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" />
+                        <RadioButton GroupName="SqlCommaPlacement" Margin="0,0,14,0" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Sql_CommaTrailing]}"
+                                     IsChecked="{Binding SqlCommaPlacement, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Trailing, Mode=OneWay}"
+                                     Command="{Binding SelectSqlCommaPlacementCommand}" CommandParameter="Trailing" />
+                        <RadioButton GroupName="SqlCommaPlacement" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Sql_CommaLeading]}"
+                                     IsChecked="{Binding SqlCommaPlacement, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Leading, Mode=OneWay}"
+                                     Command="{Binding SelectSqlCommaPlacementCommand}" CommandParameter="Leading" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Sql_IndentSize]}"
+                                   Width="120" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" />
+                        <Slider Width="140" Minimum="1" Maximum="8" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                Value="{Binding SqlIndentationSize}" />
+                        <TextBlock Text="{Binding SqlIndentationSize}" VerticalAlignment="Center" Margin="8,0,0,0"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" FontSize="12" />
+                    </StackPanel>
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Sql_AlignClauseBodies]}"
+                              IsChecked="{Binding SqlAlignClauseBodies}" Foreground="{DynamicResource PrimaryTextBrush}" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Style="{StaticResource StandardButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Format]}"
+                            Command="{Binding FormatSqlCommand}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="⇄"
+                            Command="{Binding SwapCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                            Command="{Binding ClearCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                </StackPanel>
+                <TextBlock Grid.Row="4" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11"
+                           TextWrapping="Wrap" Margin="0,0,0,6"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                <TextBlock Grid.Row="5" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Output]}" />
+                <Grid Grid.Row="6">
+                    <Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1" CornerRadius="6">
+                        <wv2:WebView2 x:Name="SqlOutputView" />
+                    </Border>
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding OutputText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+            </Grid>
+
+            <!-- Unixタイムスタンプ変換 -->
+            <StackPanel Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Timestamp}">
+                <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_TimestampLabel]}" />
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center"
+                             Text="{Binding TimestampInputText, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Grid.Column="1" Style="{StaticResource SecondaryButtonStyle}" Padding="10,5" Margin="6,0,0,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_UseNow]}"
+                            Command="{Binding UseCurrentTimestampCommand}" />
+                    <Button Grid.Column="2" Style="{StaticResource StandardButtonStyle}" Padding="10,5" Margin="6,0,0,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_ToDate]}"
+                            Command="{Binding TimestampToDateCommand}" />
+                </Grid>
+                <Grid Margin="0,0,0,4">
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" IsReadOnly="True" Padding="8,5,34,5"
+                             Text="{Binding DateOutputText, Mode=OneWay}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding DateOutputText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Rfc3339UtcLabel]}" />
+                <Grid Margin="0,0,0,4">
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" IsReadOnly="True" Padding="8,5,34,5"
+                             Text="{Binding Iso8601UtcOutputText, Mode=OneWay}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding Iso8601UtcOutputText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Rfc3339LocalLabel]}" />
+                <Grid Margin="0,0,0,16">
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" IsReadOnly="True" Padding="8,5,34,5"
+                             Text="{Binding Iso8601LocalOutputText, Mode=OneWay}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding Iso8601LocalOutputText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+
+                <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_DateLabel]}" />
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center"
+                             Text="{Binding DateInputText, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Grid.Column="1" Style="{StaticResource SecondaryButtonStyle}" Padding="10,5" Margin="6,0,0,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_UseNow]}"
+                            Command="{Binding UseCurrentDateCommand}" />
+                    <Button Grid.Column="2" Style="{StaticResource StandardButtonStyle}" Padding="10,5" Margin="6,0,0,0"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_ToTimestamp]}"
+                            Command="{Binding DateToTimestampCommand}" />
+                </Grid>
+                <Grid Margin="0,0,0,8">
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" IsReadOnly="True" Padding="8,5,34,5"
+                             Text="{Binding TimestampOutputText, Mode=OneWay}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding TimestampOutputText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <TextBlock Text="{Binding TimestampErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11" TextWrapping="Wrap"
+                           Visibility="{Binding TimestampErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+            </StackPanel>
+
+            <!-- UUID生成 -->
+            <StackPanel Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Uuid}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <RadioButton GroupName="UuidVersion" Margin="0,0,16,0" Foreground="{DynamicResource PrimaryTextBrush}"
+                                 Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_UuidVersionV4]}"
+                                 IsChecked="{Binding UuidVersion, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=V4, Mode=OneWay}"
+                                 Command="{Binding SelectUuidVersionCommand}" CommandParameter="V4" />
+                    <RadioButton GroupName="UuidVersion" Margin="0,0,16,0" Foreground="{DynamicResource PrimaryTextBrush}"
+                                 Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_UuidVersionV5]}"
+                                 IsChecked="{Binding UuidVersion, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=V5, Mode=OneWay}"
+                                 Command="{Binding SelectUuidVersionCommand}" CommandParameter="V5" />
+                    <RadioButton GroupName="UuidVersion" Foreground="{DynamicResource PrimaryTextBrush}"
+                                 Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_UuidVersionV7]}"
+                                 IsChecked="{Binding UuidVersion, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=V7, Mode=OneWay}"
+                                 Command="{Binding SelectUuidVersionCommand}" CommandParameter="V7" />
+                </StackPanel>
+
+                <StackPanel Visibility="{Binding UuidVersion, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=V5}" Margin="0,0,0,10">
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_UuidNamespace]}" />
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" Margin="0,0,0,4"
+                             Text="{Binding UuidNamespaceText, UpdateSourceTrigger=PropertyChanged}" />
+                    <WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,6,4" Content="DNS"
+                                Command="{Binding SetNamespacePresetCommand}" CommandParameter="Dns" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,6,4" Content="URL"
+                                Command="{Binding SetNamespacePresetCommand}" CommandParameter="Url" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,6,4" Content="OID"
+                                Command="{Binding SetNamespacePresetCommand}" CommandParameter="Oid" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,6,4" Content="X.500"
+                                Command="{Binding SetNamespacePresetCommand}" CommandParameter="X500" />
+                    </WrapPanel>
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_UuidName]}" />
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center"
+                             Text="{Binding UuidNameText, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_UuidNoHyphens]}"
+                              IsChecked="{Binding UuidNoHyphens}" Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,16,0" />
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_UuidUppercase]}"
+                              IsChecked="{Binding UuidUppercase}" Foreground="{DynamicResource PrimaryTextBrush}" />
+                </StackPanel>
+                <Grid Margin="0,0,0,6">
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" IsReadOnly="True" Padding="8,5,34,5"
+                             Text="{Binding UuidResult, Mode=OneWay}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding UuidResult}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <TextBlock Text="{Binding UuidErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"
+                           Visibility="{Binding UuidErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                <Button Style="{StaticResource StandardButtonStyle}" HorizontalAlignment="Left" Padding="14,6"
+                        Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Generate]}"
+                        Command="{Binding GenerateUuidCommand}" />
+            </StackPanel>
+
+            <!-- パスワード生成 -->
+            <StackPanel Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Password}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_PasswordLength]}"
+                               VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" Margin="0,0,8,0" />
+                    <Slider Width="200" Minimum="4" Maximum="64" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                            Value="{Binding PasswordLength}" />
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False"
+                             TextWrapping="NoWrap" VerticalScrollBarVisibility="Disabled"
+                             FontFamily="Segoe UI" FontSize="12"
+                             Width="60" Margin="8,0,0,0" MaxLength="3"
+                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                             Text="{Binding PasswordLength, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <WrapPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_PasswordUppercase]}"
+                              IsChecked="{Binding PasswordIncludeUppercase}" Margin="0,0,14,6" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_PasswordLowercase]}"
+                              IsChecked="{Binding PasswordIncludeLowercase}" Margin="0,0,14,6" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_PasswordDigits]}"
+                              IsChecked="{Binding PasswordIncludeDigits}" Margin="0,0,14,6" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_PasswordSymbols]}"
+                              IsChecked="{Binding PasswordIncludeSymbols}" Margin="0,0,0,6" Foreground="{DynamicResource PrimaryTextBrush}" />
+                </WrapPanel>
+                <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_PasswordExcludeAmbiguous]}"
+                          IsChecked="{Binding PasswordExcludeAmbiguous}" Margin="0,0,0,10" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <Grid Margin="0,0,0,6">
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" IsReadOnly="True" Padding="8,5,34,5"
+                             Text="{Binding PasswordResult, Mode=OneWay}" />
+                    <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding PasswordResult}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <TextBlock Text="{Binding PasswordErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"
+                           Visibility="{Binding PasswordErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+                <Button Style="{StaticResource StandardButtonStyle}" HorizontalAlignment="Left" Padding="14,6"
+                        Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Generate]}"
+                        Command="{Binding GeneratePasswordCommand}" />
+            </StackPanel>
+
+            <!-- 正規表現テスター -->
+            <Grid Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=RegexTester}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <Grid Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Pattern]}" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,0"
+                                    Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Sample_Email]}"
+                                    Command="{Binding InsertRegexSampleCommand}" CommandParameter="Email" />
+                            <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,0"
+                                    Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Sample_Date]}"
+                                    Command="{Binding InsertRegexSampleCommand}" CommandParameter="Date" />
+                            <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3"
+                                    Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Sample_Phone]}"
+                                    Command="{Binding InsertRegexSampleCommand}" CommandParameter="Phone" />
+                        </StackPanel>
+                    </Grid>
+                    <Grid Margin="0,0,0,6">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="RegexPatternTextBox" Grid.Column="0" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" Margin="0,0,6,0"
+                                 FontFamily="Consolas" Text="{Binding RegexPatternText, UpdateSourceTrigger=PropertyChanged}"
+                                 Tag="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_PatternPlaceholder]}" />
+                        <Button Grid.Column="1" Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                                Command="{Binding ClearRegexCommand}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                    </Grid>
+
+                    <!-- よく使うトークンの入力補助 (クリックでカーソル位置へ挿入) -->
+                    <WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="\d" Click="RegexTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Token_D]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="\D" Click="RegexTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Token_NotD]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="\w" Click="RegexTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Token_W]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="\W" Click="RegexTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Token_NotW]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="\s" Click="RegexTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Token_S]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="\S" Click="RegexTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Token_NotS]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="." Click="RegexTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Token_Dot]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="+" Click="RegexTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Token_Plus]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="?" Click="RegexTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Token_Question]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="^" Click="RegexTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Token_Caret]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,0,4" FontFamily="Consolas" Content="$" Click="RegexTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Token_Dollar]}" />
+                    </WrapPanel>
+
+                    <WrapPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_IgnoreCase]}"
+                                  IsChecked="{Binding RegexIgnoreCase}" Margin="0,0,14,4" Foreground="{DynamicResource PrimaryTextBrush}" />
+                        <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Global]}"
+                                  IsChecked="{Binding RegexGlobal}" Margin="0,0,14,4" Foreground="{DynamicResource PrimaryTextBrush}" />
+                        <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Multiline]}"
+                                  IsChecked="{Binding RegexMultiline}" Margin="0,0,0,4" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </WrapPanel>
+
+                    <!-- 動作・表示設定 (性能に影響する項目): インタラクティブ評価とマッチ詳細表示のON/OFF -->
+                    <WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Interactive]}"
+                                  IsChecked="{Binding RegexInteractive}" Margin="0,0,14,4" Foreground="{DynamicResource PrimaryTextBrush}" />
+                        <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_ShowMatchDetails]}"
+                                  IsChecked="{Binding RegexShowMatchDetails}" Margin="0,0,14,4" Foreground="{DynamicResource PrimaryTextBrush}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="10,3" Margin="0,0,0,4"
+                                Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_Evaluate]}"
+                                Command="{Binding EvaluateRegexCommand}" />
+                    </WrapPanel>
+
+                    <TextBlock Text="{Binding RegexErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11"
+                               TextWrapping="Wrap" Margin="0,0,0,8"
+                               Visibility="{Binding RegexErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_TestString]}" />
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="80" Margin="0,0,0,8"
+                             Text="{Binding RegexTestInputText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <Grid Margin="0,0,0,4">
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" HorizontalAlignment="Left"
+                                   Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_HighlightLabel]}" />
+                        <TextBlock Text="{Binding RegexMatchCountText}" HorizontalAlignment="Right" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    </Grid>
+                    <Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1" CornerRadius="6"
+                            Padding="8" MinHeight="60" Margin="0,0,0,8">
+                        <TextBlock x:Name="RegexHighlightTextBlock" TextWrapping="Wrap" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </Border>
+
+                    <StackPanel Visibility="{Binding RegexShowMatchDetails, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_MatchListLabel]}" />
+                        <ListBox ItemsSource="{Binding RegexMatches}" Margin="0,0,0,8" MaxHeight="300"
+                                 Background="Transparent" BorderThickness="0"
+                                 ScrollViewer.CanContentScroll="True"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 VirtualizingPanel.IsVirtualizing="True"
+                                 VirtualizingPanel.VirtualizationMode="Recycling"
+                                 VirtualizingPanel.ScrollUnit="Pixel"
+                                 VirtualizingPanel.CacheLength="200,200"
+                                 VirtualizingPanel.CacheLengthUnit="Pixel">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    <Setter Property="Focusable" Value="False" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <ContentPresenter />
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{DynamicResource CardBackgroundBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,0,0,4">
+                                        <StackPanel>
+                                            <TextBlock FontFamily="Consolas" FontSize="11" TextWrapping="Wrap">
+                                                <Run Text="{Binding Header, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+                                                <Run Text=" " />
+                                                <Run Text="{Binding Value, Mode=OneWay}" />
+                                            </TextBlock>
+                                            <ItemsControl ItemsSource="{Binding Groups}" Margin="12,2,0,0">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock FontFamily="Consolas" FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap">
+                                                            <Run Text="{Binding Name, Mode=OneWay}" />
+                                                            <Run Text=": " />
+                                                            <Run Text="{Binding Value, Mode=OneWay}" />
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </StackPanel>
+                </ScrollViewer>
+                <TextBlock Grid.Row="1" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Regex_EngineNote]}"
+                           FontSize="10" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,6,0,0" TextWrapping="Wrap" />
+            </Grid>
+
+            <!-- ケース変換 -->
+            <StackPanel Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=CaseConverter}">
+                <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Input]}" />
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" Margin="0,0,6,0"
+                             FontFamily="Consolas" Text="{Binding CaseInputText, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Grid.Column="1" Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                            Command="{Binding ClearCaseCommand}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                </Grid>
+
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="camelCase" VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" IsReadOnly="True" Margin="6,0" FontFamily="Consolas" Text="{Binding CaseCamelResult, Mode=OneWay}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding CaseCamelResult}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="PascalCase" VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" IsReadOnly="True" Margin="6,0" FontFamily="Consolas" Text="{Binding CasePascalResult, Mode=OneWay}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding CasePascalResult}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="snake_case" VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" IsReadOnly="True" Margin="6,0" FontFamily="Consolas" Text="{Binding CaseSnakeResult, Mode=OneWay}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding CaseSnakeResult}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="kebab-case" VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" IsReadOnly="True" Margin="6,0" FontFamily="Consolas" Text="{Binding CaseKebabResult, Mode=OneWay}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding CaseKebabResult}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="CONSTANT_CASE" VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" IsReadOnly="True" Margin="6,0" FontFamily="Consolas" Text="{Binding CaseConstantResult, Mode=OneWay}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding CaseConstantResult}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+            </StackPanel>
+
+            <!-- 進数変換 -->
+            <StackPanel Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=NumberBaseConverter}">
+                <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_NumberBase_UsePrefix]}"
+                          IsChecked="{Binding NumberBaseUsePrefix}" Margin="0,0,0,10" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_NumberBase_Decimal]}"
+                               VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" Margin="6,0" FontFamily="Consolas" Tag="255"
+                             Text="{Binding NumberBaseDecimalText, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding NumberBaseDecimalText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_NumberBase_Hex]}"
+                               VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" Margin="6,0" FontFamily="Consolas" Tag="FF"
+                             Text="{Binding NumberBaseHexText, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding NumberBaseHexText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_NumberBase_Octal]}"
+                               VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" Margin="6,0" FontFamily="Consolas" Tag="377"
+                             Text="{Binding NumberBaseOctalText, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding NumberBaseOctalText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+                <Grid Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_NumberBase_Binary]}"
+                               VerticalAlignment="Center" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBox Grid.Column="1" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" Margin="6,0" FontFamily="Consolas" Tag="11111111"
+                             Text="{Binding NumberBaseBinaryText, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Grid.Column="2" Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                            Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding NumberBaseBinaryText}"
+                            ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                            AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                </Grid>
+
+                <TextBlock Text="{Binding NumberBaseErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"
+                           Visibility="{Binding NumberBaseErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                <Button Style="{StaticResource StandardButtonStyle}" HorizontalAlignment="Left" Padding="14,6"
+                        Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                        Command="{Binding ClearNumberBaseCommand}" />
+            </StackPanel>
+
+            <!-- QRコード生成/デコード -->
+            <ScrollViewer Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=QrCode}"
+                          VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_QrCode_GenerateSection]}"
+                               FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource PrimaryTextBrush}" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Input]}" />
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="70" Margin="0,0,0,10"
+                             Text="{Binding QrInputText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_QrCode_EccLevel]}"
+                                   Width="110" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" />
+                        <RadioButton GroupName="QrEccLevel" Margin="0,0,14,0" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_QrCode_EccL]}"
+                                     IsChecked="{Binding QrEccLevel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=L, Mode=OneWay}"
+                                     Command="{Binding SelectQrEccLevelCommand}" CommandParameter="L" />
+                        <RadioButton GroupName="QrEccLevel" Margin="0,0,14,0" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_QrCode_EccM]}"
+                                     IsChecked="{Binding QrEccLevel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=M, Mode=OneWay}"
+                                     Command="{Binding SelectQrEccLevelCommand}" CommandParameter="M" />
+                        <RadioButton GroupName="QrEccLevel" Margin="0,0,14,0" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_QrCode_EccQ]}"
+                                     IsChecked="{Binding QrEccLevel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Q, Mode=OneWay}"
+                                     Command="{Binding SelectQrEccLevelCommand}" CommandParameter="Q" />
+                        <RadioButton GroupName="QrEccLevel" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_QrCode_EccH]}"
+                                     IsChecked="{Binding QrEccLevel, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=H, Mode=OneWay}"
+                                     Command="{Binding SelectQrEccLevelCommand}" CommandParameter="H" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_QrCode_Size]}"
+                                   VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" Margin="0,0,8,0" />
+                        <Slider Width="140" Minimum="2" Maximum="20" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                Value="{Binding QrPixelsPerModule}" />
+                        <TextBlock Text="{Binding QrPixelsPerModule}" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Style="{StaticResource StandardButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                                Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Generate]}"
+                                Command="{Binding GenerateQrCodeCommand}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                                Command="{Binding ClearQrGenerateCommand}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding QrGenerateErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8"
+                               Visibility="{Binding QrGenerateErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                    <Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1" CornerRadius="6"
+                            Width="200" Height="200" HorizontalAlignment="Left" Margin="0,0,0,8">
+                        <Image Source="{Binding QrResultImage}" Stretch="Uniform" Margin="8" />
+                    </Border>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="10,5" Margin="0,0,6,0"
+                                Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_QrCode_CopyImage]}"
+                                Command="{Binding CopyQrImageToClipboardCommand}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="10,5"
+                                Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_QrCode_SaveImage]}"
+                                Command="{Binding SaveQrImageCommand}" />
+                    </StackPanel>
+
+                    <Separator Margin="0,0,0,16" />
+
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_QrCode_DecodeSection]}"
+                               FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_QrCode_DecodeHint]}"
+                               FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,8" />
+
+                    <Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource InputBorderBrush}"
+                            BorderThickness="1" CornerRadius="6" Width="200" Height="200" HorizontalAlignment="Left" Margin="0,0,0,8">
+                        <Image Source="{Binding QrDecodeImage}" Stretch="Uniform" Margin="8" />
+                    </Border>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Style="{StaticResource StandardButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                                Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_QrCode_BrowseImage]}"
+                                Command="{Binding BrowseQrDecodeImageCommand}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                                Command="{Binding ClearQrDecodeCommand}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding QrDecodeErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8"
+                               Visibility="{Binding QrDecodeErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Output]}" />
+                    <Grid Margin="0,0,0,10">
+                        <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="70" IsReadOnly="True" Padding="8,5,34,5"
+                                 Text="{Binding QrDecodeResultText, Mode=OneWay}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0"
+                                Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding QrDecodeResultText}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Cron式パーサー -->
+            <ScrollViewer Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=CronParser}"
+                          VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Frequency]}" />
+                    <WrapPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <RadioButton GroupName="CronFrequency" Margin="0,0,14,4" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Freq_EverySecond]}"
+                                     IsChecked="{Binding CronFrequency, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=EverySecond, Mode=OneWay}"
+                                     Command="{Binding SelectCronFrequencyCommand}" CommandParameter="EverySecond" />
+                        <RadioButton GroupName="CronFrequency" Margin="0,0,14,4" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Freq_EveryMinute]}"
+                                     IsChecked="{Binding CronFrequency, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=EveryMinute, Mode=OneWay}"
+                                     Command="{Binding SelectCronFrequencyCommand}" CommandParameter="EveryMinute" />
+                        <RadioButton GroupName="CronFrequency" Margin="0,0,14,4" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Freq_Hourly]}"
+                                     IsChecked="{Binding CronFrequency, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Hourly, Mode=OneWay}"
+                                     Command="{Binding SelectCronFrequencyCommand}" CommandParameter="Hourly" />
+                        <RadioButton GroupName="CronFrequency" Margin="0,0,14,4" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Freq_Daily]}"
+                                     IsChecked="{Binding CronFrequency, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Daily, Mode=OneWay}"
+                                     Command="{Binding SelectCronFrequencyCommand}" CommandParameter="Daily" />
+                        <RadioButton GroupName="CronFrequency" Margin="0,0,14,4" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Freq_Weekly]}"
+                                     IsChecked="{Binding CronFrequency, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Weekly, Mode=OneWay}"
+                                     Command="{Binding SelectCronFrequencyCommand}" CommandParameter="Weekly" />
+                        <RadioButton GroupName="CronFrequency" Margin="0,0,14,4" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Freq_Monthly]}"
+                                     IsChecked="{Binding CronFrequency, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Monthly, Mode=OneWay}"
+                                     Command="{Binding SelectCronFrequencyCommand}" CommandParameter="Monthly" />
+                        <RadioButton GroupName="CronFrequency" Margin="0,0,14,4" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Freq_Yearly]}"
+                                     IsChecked="{Binding CronFrequency, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Yearly, Mode=OneWay}"
+                                     Command="{Binding SelectCronFrequencyCommand}" CommandParameter="Yearly" />
+                        <RadioButton GroupName="CronFrequency" Margin="0,0,0,4" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Freq_Custom]}"
+                                     IsChecked="{Binding CronFrequency, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Custom, Mode=OneWay}"
+                                     Command="{Binding SelectCronFrequencyCommand}" CommandParameter="Custom" />
+                    </WrapPanel>
+
+                    <!-- 毎秒 -->
+                    <StackPanel Visibility="{Binding CronFrequency, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=EverySecond}" Margin="0,0,0,10">
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Builder_SecondInterval]}" />
+                        <ComboBox Width="90" HorizontalAlignment="Left" ItemsSource="{Binding CronSecondIntervalOptions}" SelectedItem="{Binding CronBuilderSecondInterval}" />
+                    </StackPanel>
+
+                    <!-- 毎分 -->
+                    <StackPanel Visibility="{Binding CronFrequency, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=EveryMinute}" Margin="0,0,0,10">
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Builder_Interval]}" />
+                        <ComboBox Width="90" HorizontalAlignment="Left" ItemsSource="{Binding CronMinuteIntervalOptions}" SelectedItem="{Binding CronBuilderMinuteInterval}" />
+                    </StackPanel>
+
+                    <!-- 毎時 -->
+                    <StackPanel Visibility="{Binding CronFrequency, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Hourly}" Margin="0,0,0,10">
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Builder_Minute]}" />
+                        <ComboBox Width="90" HorizontalAlignment="Left" ItemsSource="{Binding CronMinuteOptions}" SelectedItem="{Binding CronBuilderMinute}" ItemStringFormat="{}{0:D2}" />
+                    </StackPanel>
+
+                    <!-- 毎日 -->
+                    <StackPanel Visibility="{Binding CronFrequency, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Daily}" Margin="0,0,0,10">
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Builder_Time]}" />
+                        <StackPanel Orientation="Horizontal">
+                            <ComboBox Width="70" ItemsSource="{Binding CronHourOptions}" SelectedItem="{Binding CronBuilderHour}" ItemStringFormat="{}{0:D2}" />
+                            <TextBlock Text=":" VerticalAlignment="Center" Margin="4,0" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <ComboBox Width="70" ItemsSource="{Binding CronMinuteOptions}" SelectedItem="{Binding CronBuilderMinute}" ItemStringFormat="{}{0:D2}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- 毎週 -->
+                    <StackPanel Visibility="{Binding CronFrequency, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Weekly}" Margin="0,0,0,10">
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Builder_DayOfWeek]}" />
+                        <WrapPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Day_Sun]}" IsChecked="{Binding CronBuilderSunday}" Margin="0,0,10,4" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Day_Mon]}" IsChecked="{Binding CronBuilderMonday}" Margin="0,0,10,4" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Day_Tue]}" IsChecked="{Binding CronBuilderTuesday}" Margin="0,0,10,4" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Day_Wed]}" IsChecked="{Binding CronBuilderWednesday}" Margin="0,0,10,4" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Day_Thu]}" IsChecked="{Binding CronBuilderThursday}" Margin="0,0,10,4" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Day_Fri]}" IsChecked="{Binding CronBuilderFriday}" Margin="0,0,10,4" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Day_Sat]}" IsChecked="{Binding CronBuilderSaturday}" Margin="0,0,0,4" Foreground="{DynamicResource PrimaryTextBrush}" />
+                        </WrapPanel>
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Builder_Time]}" />
+                        <StackPanel Orientation="Horizontal">
+                            <ComboBox Width="70" ItemsSource="{Binding CronHourOptions}" SelectedItem="{Binding CronBuilderHour}" ItemStringFormat="{}{0:D2}" />
+                            <TextBlock Text=":" VerticalAlignment="Center" Margin="4,0" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <ComboBox Width="70" ItemsSource="{Binding CronMinuteOptions}" SelectedItem="{Binding CronBuilderMinute}" ItemStringFormat="{}{0:D2}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- 毎月 -->
+                    <StackPanel Visibility="{Binding CronFrequency, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Monthly}" Margin="0,0,0,10">
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Builder_DayOfMonth]}" />
+                        <ComboBox Width="90" HorizontalAlignment="Left" Margin="0,0,0,8" ItemsSource="{Binding CronDayOfMonthOptions}" SelectedItem="{Binding CronBuilderDayOfMonth}" />
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Builder_Time]}" />
+                        <StackPanel Orientation="Horizontal">
+                            <ComboBox Width="70" ItemsSource="{Binding CronHourOptions}" SelectedItem="{Binding CronBuilderHour}" ItemStringFormat="{}{0:D2}" />
+                            <TextBlock Text=":" VerticalAlignment="Center" Margin="4,0" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <ComboBox Width="70" ItemsSource="{Binding CronMinuteOptions}" SelectedItem="{Binding CronBuilderMinute}" ItemStringFormat="{}{0:D2}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- 毎年 -->
+                    <StackPanel Visibility="{Binding CronFrequency, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Yearly}" Margin="0,0,0,10">
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Builder_Month]}" />
+                        <ComboBox Width="90" HorizontalAlignment="Left" Margin="0,0,0,8" ItemsSource="{Binding CronMonthOptions}" SelectedItem="{Binding CronBuilderMonth}" />
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Builder_DayOfMonth]}" />
+                        <ComboBox Width="90" HorizontalAlignment="Left" Margin="0,0,0,8" ItemsSource="{Binding CronDayOfMonthOptions}" SelectedItem="{Binding CronBuilderDayOfMonth}" />
+                        <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Builder_Time]}" />
+                        <StackPanel Orientation="Horizontal">
+                            <ComboBox Width="70" ItemsSource="{Binding CronHourOptions}" SelectedItem="{Binding CronBuilderHour}" ItemStringFormat="{}{0:D2}" />
+                            <TextBlock Text=":" VerticalAlignment="Center" Margin="4,0" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <ComboBox Width="70" ItemsSource="{Binding CronMinuteOptions}" SelectedItem="{Binding CronBuilderMinute}" ItemStringFormat="{}{0:D2}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- カスタム -->
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Builder_CustomHint]}"
+                               Visibility="{Binding CronFrequency, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Custom}"
+                               FontSize="11" TextWrapping="Wrap" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,10" />
+
+                    <Separator Margin="0,0,0,10" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Expression]}" />
+                    <Grid Margin="0,0,0,2">
+                        <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" Padding="8,5,34,5"
+                                 FontFamily="Consolas"
+                                 IsReadOnly="{Binding IsCronExpressionReadOnly}"
+                                 Text="{Binding CronExpressionText, UpdateSourceTrigger=PropertyChanged}"
+                                 Tag="0 9 * * 1-5" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0"
+                                Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding CronExpressionText}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                    </Grid>
+                    <TextBlock Text="{Binding CronFieldsHintText}" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,0,10" />
+
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_IncludeSeconds]}"
+                              IsChecked="{Binding CronIncludeSeconds}" IsEnabled="{Binding IsCronSecondsToggleEnabled}"
+                              Foreground="{DynamicResource PrimaryTextBrush}" Margin="0,0,0,10" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_FromDateTime]}" />
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" Margin="0,0,6,0"
+                                 Text="{Binding CronFromDateTimeText, UpdateSourceTrigger=PropertyChanged}"
+                                 Tag="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_FromDateTimePlaceholder]}" />
+                        <Button Grid.Column="1" Style="{StaticResource SecondaryButtonStyle}" Padding="10,5"
+                                Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_UseNow]}"
+                                Command="{Binding UseCurrentDateTimeForCronCommand}" />
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_OccurrenceCount]}"
+                                   VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" Margin="0,0,8,0" />
+                        <Slider Width="140" Minimum="1" Maximum="20" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                Value="{Binding CronOccurrenceCount}" />
+                        <TextBlock Text="{Binding CronOccurrenceCount}" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding CronErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8"
+                               Visibility="{Binding CronErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_Description]}"
+                               Visibility="{Binding CronDescriptionText, Converter={StaticResource StringToVisibilityConverter}}" />
+                    <TextBlock Text="{Binding CronDescriptionText}" TextWrapping="Wrap" Margin="0,0,0,10" Foreground="{DynamicResource PrimaryTextBrush}"
+                               Visibility="{Binding CronDescriptionText, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Cron_NextOccurrences]}" />
+                    <ItemsControl ItemsSource="{Binding CronOccurrences}" Margin="0,0,0,10">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource CardBackgroundBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,0,0,4">
+                                    <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="12" Foreground="{DynamicResource PrimaryTextBrush}" />
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button Style="{StaticResource StandardButtonStyle}" HorizontalAlignment="Left" Padding="14,6"
+                            Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                            Command="{Binding ClearCronCommand}" />
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- jqテスト -->
+            <ScrollViewer Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Jq}"
+                          VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <Grid Margin="0,0,0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Input]}" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,0"
+                                    Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Sample_Simple]}"
+                                    Command="{Binding InsertJqSampleJsonCommand}" CommandParameter="Simple" />
+                            <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,0"
+                                    Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Sample_Nested]}"
+                                    Command="{Binding InsertJqSampleJsonCommand}" CommandParameter="Nested" />
+                            <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3"
+                                    Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Sample_Array]}"
+                                    Command="{Binding InsertJqSampleJsonCommand}" CommandParameter="Array" />
+                        </StackPanel>
+                    </Grid>
+                    <TextBox x:Name="JqInputTextBox" Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="90" Margin="0,0,0,8"
+                             FontFamily="Consolas" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                             Text="{Binding JqInputText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_TreeTitle]}" />
+                    <Border Background="{DynamicResource InputBackgroundBrush}" BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1" CornerRadius="6"
+                            MinHeight="80" MaxHeight="160" Margin="0,0,0,10">
+                        <TreeView x:Name="JqTreeView" BorderThickness="0" Background="Transparent"
+                                  ItemsSource="{Binding JqTreeRootNodes}" ItemTemplate="{StaticResource JqPathNodeTemplate}"
+                                  SelectedItemChanged="JqTree_SelectedItemChanged" />
+                    </Border>
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Filter]}" />
+                    <TextBox x:Name="JqFilterTextBox" Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" Margin="0,0,0,8"
+                             FontFamily="Consolas" Text="{Binding JqFilterText, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_QuickFilters]}" />
+                    <WrapPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="." Click="JqTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Token_Identity]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content=".[]" Click="JqTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Token_Iterate]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content=".foo" Click="JqTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Token_Field]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="select(.foo == &quot;bar&quot;)" Click="JqTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Token_Select]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="map(.foo)" Click="JqTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Token_Map]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="keys" Click="JqTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Token_Keys]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="length" Click="JqTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Token_Length]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,4,4" FontFamily="Consolas" Content="sort_by(.foo)" Click="JqTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Token_SortBy]}" />
+                        <Button Style="{StaticResource SecondaryButtonStyle}" Padding="8,3" Margin="0,0,0,4" FontFamily="Consolas" Content="to_entries" Click="JqTokenButton_Click"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Token_ToEntries]}" />
+                    </WrapPanel>
+
+                    <WrapPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_RawOutput]}" Margin="0,0,14,4"
+                                  Foreground="{DynamicResource PrimaryTextBrush}" IsChecked="{Binding JqRawOutput}" />
+                        <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_CompactOutput]}" Margin="0,0,14,4"
+                                  Foreground="{DynamicResource PrimaryTextBrush}" IsChecked="{Binding JqCompactOutput}" />
+                        <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_SlurpInput]}" Margin="0,0,14,4"
+                                  Foreground="{DynamicResource PrimaryTextBrush}" IsChecked="{Binding JqSlurpInput}" />
+                        <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_NullInput]}" Margin="0,0,0,4"
+                                  Foreground="{DynamicResource PrimaryTextBrush}" IsChecked="{Binding JqNullInput}" />
+                    </WrapPanel>
+
+                    <CheckBox Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_InteractiveMode]}" Margin="0,0,0,8"
+                              Foreground="{DynamicResource PrimaryTextBrush}" IsChecked="{Binding JqInteractiveMode}" />
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Style="{StaticResource StandardButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                                Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Jq_Run]}"
+                                Command="{Binding EvaluateJqCommand}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="⇄"
+                                Command="{Binding SwapJqInputOutputCommand}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Swap]}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                                Command="{Binding ClearJqCommand}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding JqErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11"
+                               TextWrapping="Wrap" Margin="0,0,0,6"
+                               Visibility="{Binding JqErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Output]}" />
+                    <Grid Margin="0,0,0,10">
+                        <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" MinHeight="135" FontFamily="Consolas" IsReadOnly="True"
+                                 AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Padding="8,5,34,5"
+                                 Text="{Binding JqOutputText, Mode=OneWay}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,4,0"
+                                Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding JqOutputText}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Basic認証作成 -->
+            <ScrollViewer Visibility="{Binding SelectedMode, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=BasicAuth}"
+                          VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_BasicAuth_Username]}" />
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" Margin="0,0,0,10"
+                             Text="{Binding BasicAuthUsername, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_BasicAuth_Password]}" />
+                    <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" Margin="0,0,0,10"
+                             Text="{Binding BasicAuthPassword, UpdateSourceTrigger=PropertyChanged}" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_BasicAuth_Header]}" />
+                    <Grid Margin="0,0,0,16">
+                        <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" Padding="8,5,34,5"
+                                 FontFamily="Consolas" IsReadOnly="True"
+                                 Text="{Binding BasicAuthHeaderText, Mode=OneWay}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0"
+                                Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding BasicAuthHeaderText}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                    </Grid>
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_BasicAuth_UserInfoUrl]}" />
+                    <Grid Margin="0,0,0,16">
+                        <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" Padding="8,5,34,5"
+                                 FontFamily="Consolas" IsReadOnly="True"
+                                 Text="{Binding BasicAuthUserInfoText, Mode=OneWay}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0"
+                                Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding BasicAuthUserInfoText}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                    </Grid>
+
+                    <Separator Margin="0,0,0,10" />
+
+                    <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_BasicAuth_HtpasswdSection]}"
+                               FontWeight="Bold" Margin="0,0,0,8" Foreground="{DynamicResource PrimaryTextBrush}" />
+
+                    <TextBlock Style="{StaticResource ConverterLabelStyle}" Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_BasicAuth_Algorithm]}" />
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <RadioButton GroupName="HtpasswdAlgorithm" Margin="0,0,14,0" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_BasicAuth_AlgorithmBcrypt]}"
+                                     IsChecked="{Binding HtpasswdAlgorithm, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Bcrypt, Mode=OneWay}"
+                                     Command="{Binding SelectHtpasswdAlgorithmCommand}" CommandParameter="Bcrypt" />
+                        <RadioButton GroupName="HtpasswdAlgorithm" Margin="0,0,14,0" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_BasicAuth_AlgorithmApr1]}"
+                                     IsChecked="{Binding HtpasswdAlgorithm, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Apr1Md5, Mode=OneWay}"
+                                     Command="{Binding SelectHtpasswdAlgorithmCommand}" CommandParameter="Apr1Md5" />
+                        <RadioButton GroupName="HtpasswdAlgorithm" Foreground="{DynamicResource PrimaryTextBrush}"
+                                     Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_BasicAuth_AlgorithmSha1]}"
+                                     IsChecked="{Binding HtpasswdAlgorithm, Converter={StaticResource EnumToBoolConverter}, ConverterParameter=Sha1, Mode=OneWay}"
+                                     Command="{Binding SelectHtpasswdAlgorithmCommand}" CommandParameter="Sha1" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10"
+                                Visibility="{Binding IsHtpasswdBcryptCostVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_BasicAuth_BcryptCost]}"
+                                   VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" Margin="0,0,8,0" />
+                        <Slider Width="140" Minimum="4" Maximum="16" TickFrequency="1" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                Value="{Binding HtpasswdBcryptCost}" />
+                        <TextBlock Text="{Binding HtpasswdBcryptCost}" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Style="{StaticResource StandardButtonStyle}" Padding="14,6" Margin="0,0,6,0"
+                                Content="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Generate]}"
+                                Command="{Binding GenerateHtpasswdLineCommand}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="🗑️" Foreground="{DynamicResource DangerBrush}"
+                                Command="{Binding ClearBasicAuthCommand}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Converter_Clear]}" />
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding HtpasswdErrorMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8"
+                               Visibility="{Binding HtpasswdErrorMessage, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                    <Grid Margin="0,0,0,10" Visibility="{Binding HtpasswdLineText, Converter={StaticResource StringToVisibilityConverter}}">
+                        <TextBox Style="{StaticResource ConverterInputTextBoxStyle}" AcceptsReturn="False" MinHeight="34" VerticalContentAlignment="Center" Padding="8,5,34,5"
+                                 FontFamily="Consolas" IsReadOnly="True"
+                                 Text="{Binding HtpasswdLineText, Mode=OneWay}" />
+                        <Button Style="{StaticResource CardIconButtonStyle}" Content="📋" Foreground="{DynamicResource CopyIconBrush}"
+                                HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,4,0"
+                                Command="{Binding CopyToClipboardCommand}" CommandParameter="{Binding HtpasswdLineText}"
+                                ToolTip="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}"
+                                AutomationProperties.Name="{Binding Source={x:Static services:LocalizationManager.Instance}, Path=[Button_Copy]}" />
+                    </Grid>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Window>
