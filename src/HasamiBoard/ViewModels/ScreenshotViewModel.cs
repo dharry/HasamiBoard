@@ -160,24 +160,31 @@ public partial class ScreenshotViewModel : ObservableObject, IQuickFilterable
     {
         Application.Current.Dispatcher.Invoke(() =>
         {
-            var timestamp = DateTime.Now;
-            string imagePath = _imageStorageService.SaveScreenshot(image, timestamp);
-
-            var model = new ScreenshotItem
+            try
             {
-                ImagePath = imagePath,
-                CreatedAt = timestamp,
-            };
+                var timestamp = DateTime.Now;
+                string imagePath = _imageStorageService.SaveScreenshot(image, timestamp);
 
-            if (_settingsService.Current.IsDominantColorExtractionEnabled)
-            {
-                model.DominantColorsHex = _imageStorageService.ExtractDominantColors(imagePath);
+                var model = new ScreenshotItem
+                {
+                    ImagePath = imagePath,
+                    CreatedAt = timestamp,
+                };
+
+                if (_settingsService.Current.IsDominantColorExtractionEnabled)
+                {
+                    model.DominantColorsHex = _imageStorageService.ExtractDominantColors(imagePath);
+                }
+
+                _repository.Insert(model);
+
+                TrimIfNeeded();
+                LoadAll();
             }
-
-            _repository.Insert(model);
-
-            TrimIfNeeded();
-            LoadAll();
+            catch (Exception ex)
+            {
+                CrashLogger.Log(ex);
+            }
         }, DispatcherPriority.Background);
     }
 

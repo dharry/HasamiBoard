@@ -145,8 +145,9 @@ public partial class MemoEditWindow : Window
             string absolutePath = _imageStorageService.SaveMemoImage(image, DateTime.Now);
             return $"![screenshot]({absolutePath.Replace('\\', '/')})";
         }
-        catch (IOException)
+        catch (Exception ex)
         {
+            CrashLogger.Log(ex);
             return string.Empty;
         }
     }

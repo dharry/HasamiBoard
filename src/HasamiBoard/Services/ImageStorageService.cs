@@ -33,10 +33,16 @@ public class ImageStorageService
     /// <summary>ビットマップを設定形式でエンコードし、日付別フォルダへファイル保存する。</summary>
     private string SaveImage(BitmapSource bitmapSource, string subFolder, string fileNamePrefix, DateTime timestamp)
     {
-        string format = _settingsService.Current.ScreenshotImageFormat;
+        ArgumentNullException.ThrowIfNull(bitmapSource);
+        if (bitmapSource.PixelWidth <= 0 || bitmapSource.PixelHeight <= 0)
+        {
+            throw new ArgumentException("Bitmap has invalid dimensions (width or height <= 0).", nameof(bitmapSource));
+        }
+
+        string format = _settingsService.Current.ScreenshotImageFormat?.ToLowerInvariant() ?? "png";
         string ext = format switch
         {
-            "jpg" => "jpg",
+            "jpg" or "jpeg" => "jpg",
             "webp" => "webp",
             _ => "png",
         };
@@ -50,38 +56,81 @@ public class ImageStorageService
         string fileName = $"{fileNamePrefix}{timestamp:HHmmss}_{Guid.NewGuid():N}.{ext}";
         string absolutePath = Path.Combine(absoluteDir, fileName);
 
-        using var pngStream = new MemoryStream();
-        var encoder = new PngBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
-        encoder.Save(pngStream);
-        pngStream.Position = 0;
-
-        using var bitmap = SKBitmap.Decode(pngStream);
-        using SKData data = format switch
+        if (format is "jpg" or "jpeg")
         {
-            "jpg" => bitmap.Encode(SKEncodedImageFormat.Jpeg, _settingsService.Current.ScreenshotJpegQuality),
-            "webp" => EncodeWebp(bitmap),
-            _ => bitmap.Encode(SKEncodedImageFormat.Png, 100),
-        };
+            using var fileStream = File.Create(absolutePath);
+            var encoder = new JpegBitmapEncoder
+            {
+                QualityLevel = Math.Clamp(_settingsService.Current.ScreenshotJpegQuality, 1, 100)
+            };
+            encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
+            encoder.Save(fileStream);
+            return absolutePath;
+        }
 
+        if (format == "webp")
+        {
+            try
+            {
+                using var pngStream = new MemoryStream();
+                var pngEncoder = new PngBitmapEncoder();
+                pngEncoder.Frames.Add(BitmapFrame.Create(bitmapSource));
+                pngEncoder.Save(pngStream);
+                pngStream.Position = 0;
+
+                using var bitmap = SKBitmap.Decode(pngStream);
+                if (bitmap is not null)
+                {
+                    using var data = EncodeWebp(bitmap);
+                    if (data is not null)
+                    {
+                        using var fileStream = File.Create(absolutePath);
+                        data.SaveTo(fileStream);
+                        return absolutePath;
+                    }
+                }
+            }
+            catch
+            {
+                // WebP エンコードに失敗した場合は PNG にフォールバックする
+            }
+
+            // WebP 失敗時のフォールバック: PNG として保存
+            ext = "png";
+            fileName = $"{fileNamePrefix}{timestamp:HHmmss}_{Guid.NewGuid():N}.{ext}";
+            absolutePath = Path.Combine(absoluteDir, fileName);
+        }
+
+        // デフォルト: PNG 保存 (WPF の PngBitmapEncoder を直接使用)
         using (var fileStream = File.Create(absolutePath))
         {
-            data.SaveTo(fileStream);
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
+            encoder.Save(fileStream);
         }
 
         return absolutePath;
     }
 
     /// <summary>ビットマップを設定の品質/可逆設定でWebP形式にエンコードする。</summary>
-    private SKData EncodeWebp(SKBitmap bitmap)
+    private SKData? EncodeWebp(SKBitmap bitmap)
     {
         var settings = _settingsService.Current;
         var options = new SKWebpEncoderOptions(
             settings.ScreenshotWebpLossless ? SKWebpEncoderCompression.Lossless : SKWebpEncoderCompression.Lossy,
-            settings.ScreenshotWebpQuality);
+            Math.Clamp(settings.ScreenshotWebpQuality, 1, 100));
 
         using var pixmap = bitmap.PeekPixels();
-        return pixmap.Encode(options) ?? bitmap.Encode(SKEncodedImageFormat.Webp, (int)settings.ScreenshotWebpQuality);
+        if (pixmap is not null)
+        {
+            var encoded = pixmap.Encode(options);
+            if (encoded is not null)
+            {
+                return encoded;
+            }
+        }
+
+        return bitmap.Encode(SKEncodedImageFormat.Webp, Math.Clamp(settings.ScreenshotWebpQuality, 1, 100));
     }
 
     /// <summary>画像の主要色を最大 maxColors 色まで抽出する (簡易ヒストグラム量子化)。</summary>
@@ -98,14 +147,15 @@ public class ImageStorageService
                 return new List<string>();
             }
 
-            using var small = original.Resize(new SKImageInfo(48, 48), SKSamplingOptions.Default) ?? original;
+            using var resized = original.Resize(new SKImageInfo(48, 48), SKSamplingOptions.Default);
+            var target = resized ?? original;
 
             var counts = new Dictionary<int, int>();
-            for (int y = 0; y < small.Height; y++)
+            for (int y = 0; y < target.Height; y++)
             {
-                for (int x = 0; x < small.Width; x++)
+                for (int x = 0; x < target.Width; x++)
                 {
-                    var pixel = small.GetPixel(x, y);
+                    var pixel = target.GetPixel(x, y);
                     if (pixel.Alpha < 16)
                     {
                         continue;

@@ -138,9 +138,25 @@ public class ClipboardMonitorService : IDisposable
                 }
 
                 var image = Clipboard.GetImage();
-                if (image is not null && _imageDebounceTimer is not null)
+                if (image is not null && image.PixelWidth > 0 && image.PixelHeight > 0 && _imageDebounceTimer is not null)
                 {
-                    _pendingImage = image;
+                    BitmapSource safeImage;
+                    try
+                    {
+                        var writeable = new WriteableBitmap(image);
+                        writeable.Freeze();
+                        safeImage = writeable;
+                    }
+                    catch
+                    {
+                        if (image.CanFreeze)
+                        {
+                            image.Freeze();
+                        }
+                        safeImage = image;
+                    }
+
+                    _pendingImage = safeImage;
                     _imageDebounceTimer.Stop();
                     _imageDebounceTimer.Start();
                 }

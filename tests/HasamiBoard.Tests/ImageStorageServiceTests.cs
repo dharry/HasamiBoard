@@ -114,4 +114,35 @@ public class ImageStorageServiceTests : IDisposable
 
         Assert.False(File.Exists(path));
     }
+
+    [Fact]
+    public void SaveScreenshot_NullBitmap_ThrowsArgumentNullException()
+    {
+        var service = new ImageStorageService(CreateSettings("png"));
+        Assert.Throws<ArgumentNullException>(() => service.SaveScreenshot(null!, DateTime.Now));
+    }
+
+    [Fact]
+    public void SaveScreenshot_InvalidDimensions_ThrowsArgumentException()
+    {
+        var service = new ImageStorageService(CreateSettings("png"));
+        var zeroBitmap = new ZeroDimensionBitmapSource();
+        Assert.Throws<ArgumentException>(() => service.SaveScreenshot(zeroBitmap, DateTime.Now));
+    }
+
+    private sealed class ZeroDimensionBitmapSource : BitmapSource
+    {
+        public override double DpiX => 96;
+        public override double DpiY => 96;
+        public override PixelFormat Format => PixelFormats.Pbgra32;
+        public override int PixelWidth => 0;
+        public override int PixelHeight => 0;
+        public override double Width => 0;
+        public override double Height => 0;
+
+        public override void CopyPixels(System.Windows.Int32Rect sourceRect, Array pixels, int stride, int offset) { }
+        public override void CopyPixels(Array pixels, int stride, int offset) { }
+        public override void CopyPixels(System.Windows.Int32Rect sourceRect, nint buffer, int bufferSize, int stride) { }
+        protected override System.Windows.Freezable CreateInstanceCore() => new ZeroDimensionBitmapSource();
+    }
 }
